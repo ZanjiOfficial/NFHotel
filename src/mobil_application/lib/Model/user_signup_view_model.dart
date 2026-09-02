@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobil_application/utillity/string_extensions.dart';
 
+//https://www.youtube.com/watch?v=osZ0cm9nvxM
+
 class UserSignupViewModel {
   final String? email;
   final String? password;
