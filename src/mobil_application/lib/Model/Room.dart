@@ -11,7 +11,6 @@ class Room {
     required this.capacity,
     required this.isCleaned,
     required this.needsService,
-
   });
 
   factory Room.fromJson(Map<String, dynamic> json) {
@@ -20,7 +19,7 @@ class Room {
       note: json['note'],
       capacity: json['capacity'],
       isCleaned: json['isCleaned'],
-      needsService: json['needsService']
+      needsService: json['needsService'],
     );
   }
 }
