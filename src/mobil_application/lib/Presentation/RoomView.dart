@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:mobil_application/Controllers/roomController.dart';
+import 'package:mobil_application/Model/Enums/room_status.dart';
 import 'package:mobil_application/Model/roomModel.dart';
-import 'package:mobil_application/Widgets/RoomTile.dart';
+import 'package:mobil_application/Controllers/roomController.dart';
+import 'package:mobil_application/Widgets/StatusIcon.dart';
 
-class RoomPage extends StatelessWidget {
+class RoomView extends StatelessWidget {
   final RoomModel room;
-  const RoomPage({super.key, required this.room});
+
+  const RoomView({super.key, required this.room});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(room.number.toString())),
+      appBar: AppBar(title: Text('Room ${room.number}')),
       body: ListenableBuilder(
         listenable: roomController,
         builder: (context, _) => ListView(
@@ -23,7 +25,7 @@ class RoomPage extends StatelessWidget {
                 trailing: room.status == status
                     ? const Icon(Icons.check)
                     : null,
-                onTap: () => roomController.setStatus(room, status),
+                onTap: () => roomController.setRoomStatus(room, status),
               ),
           ],
         ),

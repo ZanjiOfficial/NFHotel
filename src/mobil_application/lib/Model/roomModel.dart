@@ -1,8 +1,8 @@
-import 'package:mobil_application/Model/Enums/roomStatus.dart';
+import 'package:mobil_application/Model/Enums/room_status.dart';
 
-class Room {
+class RoomModel {
   final int number;
   RoomStatus status;
 
-  Room({required this.number, required this.status});
+  RoomModel({required this.number, required this.status});
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobil_application/Controllers/roomController.dart';
 import 'package:mobil_application/Presentation/RoomView.dart';
+import 'package:mobil_application/Widgets/RoomTile.dart';
 
 class RoomOverview extends StatelessWidget {
   const RoomOverview({super.key});
@@ -17,7 +18,15 @@ class RoomOverview extends StatelessWidget {
           crossAxisSpacing: 12,
         ),
         itemCount: roomController.rooms.length,
-        itemBuilder: (context, i) => RoomTile(room: roomController.rooms[i]),
+        itemBuilder: (context, i) => RoomTile(
+          roomId: roomController.rooms[i].number,
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => RoomView(room: roomController.rooms[i]),
+            ),
+          ),
+        ),
       ),
     );
   }
