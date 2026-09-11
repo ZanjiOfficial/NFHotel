@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
 import 'package:flutter_login/theme.dart';
 
-import 'RoomOverview.dart';
+import 'RoomList.dart';
 
 //Fandt flutter_login https://pub.dev/packages/flutter_login#-installing-tab-
 //
@@ -51,8 +51,10 @@ class LoginScreen extends StatelessWidget {
       onLogin: _authUser,
       onSignup: _signupUser,
       onSubmitAnimationCompleted: () {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => RoomOverview()),
+        Navigator.of(
+          context,
+        ).pushReplacement(
+          MaterialPageRoute(builder: (context) => const RoomOverview()),
         );
       },
       onRecoverPassword: _recoverPassword,

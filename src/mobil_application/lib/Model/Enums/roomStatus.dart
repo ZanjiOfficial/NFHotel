@@ -1,12 +1,14 @@
+import 'package:flutter/material.dart';
+
 enum RoomStatus {
-  clean('Clean', Colors.green),
+  clean('Clean', Colors.green, null),
   needsCleaning('Needs Cleaning', Colors.yellow, 'Assets/ImageMop.png'),
   dailyCleaning('Daily Cleaning', Colors.blue, 'Assets/ImageBed.png'),
-  needsMaintenance('Needs Maintenance', Colors.red, 'Assets/ImageMop.png'),
+  needsMaintenance('Needs Maintenance', Colors.red, 'Assets/ImageMop.png');
 
   const RoomStatus(this.label, this.color, this.icon);
 
   final String label;
   final Color color;
-  final String icon;
+  final String? icon;
 }

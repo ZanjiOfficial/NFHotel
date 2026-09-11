@@ -10,13 +10,7 @@ class RoomTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Card(
-        child: Center(
-          child: Text(roomName),
-        ),
-      ),
+      child: Card(child: Center(child: Text(roomName))),
     );
   }
 }
-
-
