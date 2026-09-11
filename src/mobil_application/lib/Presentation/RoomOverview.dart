@@ -1,26 +1,14 @@
 import 'package:flutter/material.dart';
 
-class RoomOverview extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Room Overview'),
-      ),
-      body: GridView.builder(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 1.0,
-        ),
-        itemCount: 12, // Replace with your actual room count
-        itemBuilder: (context, index) {
-          return Card(
-            child: Center(
-              child: Text('Room ${index + 1}'),
-            ),
-          );
-        },
-      ),
-    );
-  }
+class Room {
+  final int roomNumber;
+  final String status;
+  final String name;
+
+  Room({required this.roomNumber, required this.status, required this.name});
 }
+
+final rooms = List.generate(
+  12,
+  (i) => Room(roomNumber: i + 1, name: 'Room ${i + 1}', status: 'available'),
+);
