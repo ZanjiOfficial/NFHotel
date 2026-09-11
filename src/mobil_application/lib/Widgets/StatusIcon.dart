@@ -16,7 +16,7 @@ class StatusIcon extends StatelessWidget {
       path,
       width: size,
       height: size,
-      errorBuilder: (_, __, ___) => Icon(Icons.broken_image, size: size),
+      errorBuilder: (_, _, _) => Icon(Icons.broken_image, size: size),
     );
   }
 }

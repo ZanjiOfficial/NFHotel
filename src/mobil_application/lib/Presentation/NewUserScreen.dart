@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class NewUserScreen extends StatefulWidget {
+  const NewUserScreen({super.key});
+
   @override
   _NewUserScreenState createState() => _NewUserScreenState();
 }
