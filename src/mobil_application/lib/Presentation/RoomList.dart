@@ -19,7 +19,7 @@ class RoomOverview extends StatelessWidget {
         ),
         itemCount: roomController.rooms.length,
         itemBuilder: (context, i) => RoomTile(
-          roomId: roomController.rooms[i].number,
+          room: roomController.rooms[i],
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(

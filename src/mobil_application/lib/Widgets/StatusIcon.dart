@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobil_application/Model/Enums/RoomStatus.dart';
+import 'package:mobil_application/Model/Enums/room_status.dart';
 
 class StatusIcon extends StatelessWidget {
   final RoomStatus status;

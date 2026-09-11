@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mobil_application/Model/roomModel.dart';
 
+
 class RoomTile extends StatelessWidget {
-  final Room room;
+  final RoomModel room;
   final VoidCallback? onTap;
 
   const RoomTile({super.key, required this.room, this.onTap});

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mobil_application/Model/user_signup_view_model.dart';
 
 class NewUserScreen extends StatefulWidget {
   @override
