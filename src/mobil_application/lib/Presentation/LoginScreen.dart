@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
+import 'package:google_fonts/google_fonts.dart';
 
+import '../theme.dart';
 import 'RoomList.dart';
 
 //Fandt flutter_login https://pub.dev/packages/flutter_login#-installing-tab-
@@ -57,6 +59,37 @@ class LoginScreen extends StatelessWidget {
         );
       },
       onRecoverPassword: _recoverPassword,
+      theme: LoginTheme(
+        primaryColor: AppColors.navy,
+        accentColor: AppColors.amber,
+        pageColorLight: AppColors.navy,
+        pageColorDark: AppColors.navyDark,
+        titleStyle: GoogleFonts.playfairDisplay(
+          fontSize: 32,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+        bodyStyle: GoogleFonts.inter(color: AppColors.textMuted),
+        buttonStyle: GoogleFonts.inter(
+          fontWeight: FontWeight.w600,
+          color: AppColors.navyDark,
+        ),
+        cardTheme: CardTheme(
+          color: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        buttonTheme: LoginButtonTheme(
+          backgroundColor: AppColors.amber,
+          elevation: 0,
+          highlightElevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      ),
     );
   }
 }
