@@ -21,7 +21,7 @@ def ensure_venv():
         if os.name == "nt":
             venv_python = os.path.join(venv_dir, "Scripts", "python.exe")
         else:
-            venv_python = os.path.join(venv_dir, "bin", "python")
+            venv_python = os.path.join(venv_dir, "bin", "python3")
 
         # Check if the virtual environment actually exists
         if not os.path.exists(venv_python):

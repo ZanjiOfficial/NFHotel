@@ -32,3 +32,14 @@ source venv/bin/activate
 ```bash
 pip3 install -r requiremnts.txt
 ```
+
+### AI Backend: LM Studio
+
+The Python scripts use [LM Studio](https://lmstudio.ai/) as their AI backend. Instead of calling a cloud LLM API, they talk to LM Studio's local OpenAI-compatible server (default `http://localhost:1234`) via the `lmstudio` Python package.
+
+Before running the analysis, you need to:
+
+1. Install LM Studio and load the model used by the script (`qwen/qwen3.8-27b`)
+2. Start the local server (Developer tab → Start Server)
+
+The model is configured in `main.py` (`lms.llm("qwen/qwen3.8-27b")`).
