@@ -17,7 +17,7 @@ Q-01 til Q-04 er domænespørgsmål — hvad *er* en booking, hvornår må man c
 **2. Mobilapp i Flutter er afklaret — og ændrer målarkitekturen. [opdateret 2026-09-02]**
 Valgfagene er krav, ikke valg. Mobilappen bygges i **Flutter**. Det afgør Q-33 og Q-35, og planens afsnit 3 er opdateret til fem projekter + en `mobile/`-mappe.
 
-- **Blazor Server har ingen HTTP-API** — den kører over SignalR mellem browser og server. En mobilapp kan ikke bruge den. `Floozys.Hotel.Api` er derfor obligatorisk, ikke valgfri.
+- **Blazor Server har ingen HTTP-API** — den kører over SignalR mellem browser og server. En mobilapp kan ikke bruge den. `NFHotel.Api` er derfor obligatorisk, ikke valgfri.
 - **Flutter er Dart.** Der kan ikke deles én linje C# med backend'en — modsat .NET MAUI, hvor `Domain` og `Application` kunne refereres direkte. **API-kontrakten er dermed det eneste integrationspunkt**, og skal behandles som et selvstændigt artefakt: OpenAPI-spec fra `Api`, som Dart-klienten genereres fra.
 - **JWT fra start.** Cookies rækker ikke. **Q-08 (Identity) er ikke længere til at udskyde** — den flytter fra "senere" til Fase 1b.
 - **Serialisering skal besluttes bevidst.** Dart og C# er ikke enige om defaults for enums og datoer. Se Q-53 og Q-54.
@@ -69,7 +69,7 @@ Valgfagene er krav, ikke valg. Mobilappen bygges i **Flutter**. Det afgør Q-33 
 | Id | Spørgsmål | Status |
 |---|---|---|
 | ~~Q-33~~ | Platform | ✅ **Afklaret: Flutter** |
-| ~~Q-35~~ | Skal `Floozys.Hotel.Api` med? | ✅ **Afklaret: ja, obligatorisk.** Planens afsnit 3 er opdateret |
+| ~~Q-35~~ | Skal `NFHotel.Api` med? | ✅ **Afklaret: ja, obligatorisk.** Planens afsnit 3 er opdateret |
 | ~~Q-36~~ | Token-baseret auth fra start? | ✅ **Afklaret: ja, JWT.** Følger af Flutter. Se Q-08 |
 | ~~Q-34~~ | Hvem er brugeren? | ✅ **Afklaret: kun personale.** Hjemmesiden dækker både personale og kunder |
 | **Q-37** | Offline-understøttelse? | Åben. Hvis ja, ændrer det datamodellen (sync, konflikter, lokale id'er) — stor mundfuld |
@@ -84,7 +84,7 @@ Valgfagene er krav, ikke valg. Mobilappen bygges i **Flutter**. Det afgør Q-33 
 
 **Konsekvens af Q-34 (personale-app):** appen genbruger BR-06 til BR-10 direkte fra ledgeren og kræver **ingen nye forretningsregler**. Den demonstrerer stadig hele lagdelingen: Flutter → API → Service → Repository → DB. Mobil-guilden er dermed ikke blokeret af Q-04 (priser) — det er hjemmesidens kundeside derimod. Se afsnittet "Kundesiden" nedenfor.
 
-**API-scope følger med:** `Floozys.Hotel.Api` behøver kun personale-endpoints til at starte med. Skal kundesiden på et tidspunkt også bruge API'et (fx hvis I senere vil lave en kunde-app), er det en udvidelse — ikke et redesign, så længe endpoints er autoriseret pr. rolle fra start.
+**API-scope følger med:** `NFHotel.Api` behøver kun personale-endpoints til at starte med. Skal kundesiden på et tidspunkt også bruge API'et (fx hvis I senere vil lave en kunde-app), er det en udvidelse — ikke et redesign, så længe endpoints er autoriseret pr. rolle fra start.
 
 **Bonus for AI Integration-rapporten:** en Flutter-app oven på det samme `Application`-lag er det stærkest mulige bevis for at Clean Architecture-opdelingen holder. To klienter i to sprog, nul duplikeret forretningslogik, og en ledger der kan auditeres mod begge.
 

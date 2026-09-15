@@ -1,6 +1,6 @@
-# Business Rules Ledger — Floozys Hotel
+# Business Rules Ledger — NFHotel
 
-> Fase 0, genereret 2026-09-02. Kilde: `4. Semester\Floozys-Hotel-main\`.
+> Fase 0, genereret 2026-09-02. Kilde: `4. Semester\NFHotel-Hotel-main\`.
 > **126 regler.** Kolonnen "Status i ny kode" udfyldes i Fase 3 af `verify:ledger-audit`.
 > Kolonnen "Bevis" peger på den test i det gamle projekt der beviser reglen (T-id'er, se `Analysis.md` afsnit 5).
 >

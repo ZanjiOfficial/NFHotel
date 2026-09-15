@@ -75,7 +75,7 @@ Alle disse er **billige at tilføje**, når beslutning 1 holder. De skal ikke de
 
 | Hvad | Hvad det koster når det kommer | Track |
 |---|---|---|
-| `Floozys.Hotel.Api` | Nyt projekt der refererer `Application`. Endpoints er tynde kald til services der allerede findes | Mobil |
+| `NFHotel.Api` | Nyt projekt der refererer `Application`. Endpoints er tynde kald til services der allerede findes | Mobil |
 | Flutter-app | Selvstændig kodebase. Rører ikke .NET-solutionen | Mobil |
 | Kundeside på hjemmesiden | Ny mappe i `Web`. Nye regler, ja — men de skal alligevel defineres når featuren bygges | Frontend |
 | Auth-implementering + JWT | Middleware, en migration, `[Authorize]`-attributter. **Ikke** ASP.NET Identity — se D-01 | Cybersecurity |

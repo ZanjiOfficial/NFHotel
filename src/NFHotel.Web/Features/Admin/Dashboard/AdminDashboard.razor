@@ -1,0 +1,196 @@
+@page "/admin"
+@layout NFHotel.Web.Components.Layout.AdminLayout
+@rendermode InteractiveServer
+@using NFHotel.Web.Features.Admin.Dashboard
+@inject AdminDashboardViewModel ViewModel
+
+@*
+    Dagens overblik: hvem kommer, hvem rejser, og hvilke rum mangler at blive gjort.
+    Kun markup og binding — alt hentes og opdeles i AdminDashboardViewModel (B-10).
+
+    Hvert nøgletal fører videre til den skærm hvor arbejdet udføres, så dashboardet er en
+    indgang og ikke en blindgyde.
+*@
+
+<PageTitle>Dashboard — administration</PageTitle>
+
+<div class="stack-lg">
+    <PageHeader Title="Dashboard"
+                Subtitle="@SubtitleText">
+        <Actions>
+            <button type="button"
+                    class="btn btn-secondary"
+                    disabled="@ViewModel.IsBusy"
+                    @onclick="RefreshAsync">
+                Refresh
+            </button>
+        </Actions>
+    </PageHeader>
+
+    <ErrorAlert Errors="ViewModel.Errors" />
+
+    @if (!ViewModel.IsLoaded)
+    {
+        <LoadingSkeleton Rows="6" />
+    }
+    else
+    {
+        <div class="grid-3">
+            <div class="stat">
+                <span class="stat-value">@ViewModel.Arrivals.Count</span>
+                <span class="stat-label">Arrivals today</span>
+                <p class="muted">
+                    <a href="/admin/bookings">Go to bookings</a>
+                </p>
+            </div>
+
+            <div class="stat">
+                <span class="stat-value">@ViewModel.Departures.Count</span>
+                <span class="stat-label">Departures today</span>
+                <p class="muted">
+                    <a href="/admin/bookings">Go to bookings</a>
+                </p>
+            </div>
+
+            <div class="stat">
+                <span class="stat-value">@ViewModel.RoomsAwaitingCleaning.Count</span>
+                <span class="stat-label">Rooms needing cleaning</span>
+                <p class="muted">
+                    <a href="/admin/rooms">Go to rooms</a>
+                </p>
+            </div>
+        </div>
+
+        <section class="stack" aria-labelledby="arrivals">
+            <h2 class="subtitle" id="arrivals">Arrivals today</h2>
+
+            @if (ViewModel.Arrivals.Count == 0)
+            {
+                <EmptyState Title="No arrivals today"
+                            Description="No booking has today as its check-in date. Open the booking list to see what is coming up.">
+                    <a class="btn btn-secondary btn-sm" href="/admin/bookings">Open bookings</a>
+                </EmptyState>
+            }
+            else
+            {
+                <div class="table-wrap">
+                    <table class="table table-compact">
+                        <caption>Bookings checking in on @AdminFormat.Date(ViewModel.Today)</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Booking</th>
+                                <th scope="col">Guest</th>
+                                <th scope="col">Room</th>
+                                <th scope="col" class="numeric-start">Check-out</th>
+                                <th scope="col">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var booking in ViewModel.Arrivals)
+                            {
+                                <tr>
+                                    <td class="numeric-start">@booking.BookingNumber</td>
+                                    <td>@booking.GuestFullName</td>
+                                    <td class="numeric-start">@booking.RoomNumber</td>
+                                    <td class="numeric-start">@AdminFormat.Date(booking.EndDate)</td>
+                                    <td><StatusBadge BookingStatus="booking.Status" /></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+
+        <section class="stack" aria-labelledby="departures">
+            <h2 class="subtitle" id="departures">Departures today</h2>
+
+            @if (ViewModel.Departures.Count == 0)
+            {
+                <EmptyState Title="No departures today"
+                            Description="No booking frees up its room today." />
+            }
+            else
+            {
+                <div class="table-wrap">
+                    <table class="table table-compact">
+                        <caption>Bookings freeing up their room on @AdminFormat.Date(ViewModel.Today)</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Booking</th>
+                                <th scope="col">Guest</th>
+                                <th scope="col">Room</th>
+                                <th scope="col" class="numeric-start">Check-in</th>
+                                <th scope="col">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var booking in ViewModel.Departures)
+                            {
+                                <tr>
+                                    <td class="numeric-start">@booking.BookingNumber</td>
+                                    <td>@booking.GuestFullName</td>
+                                    <td class="numeric-start">@booking.RoomNumber</td>
+                                    <td class="numeric-start">@AdminFormat.Date(booking.StartDate)</td>
+                                    <td><StatusBadge BookingStatus="booking.Status" /></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+
+        <section class="stack" aria-labelledby="housekeeping">
+            <h2 class="subtitle" id="housekeeping">Rooms needing cleaning</h2>
+
+            @if (ViewModel.RoomsAwaitingCleaning.Count == 0)
+            {
+                <EmptyState Title="Every room is clean"
+                            Description="Nothing is waiting to be cleaned right now.">
+                    <a class="btn btn-secondary btn-sm" href="/admin/rooms">Open the room list</a>
+                </EmptyState>
+            }
+            else
+            {
+                <div class="table-wrap">
+                    <table class="table table-compact">
+                        <caption>Rooms where cleaning can be started</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Room</th>
+                                <th scope="col" class="numeric">Floor</th>
+                                <th scope="col">Size</th>
+                                <th scope="col">Housekeeping</th>
+                                <th scope="col">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var room in ViewModel.RoomsAwaitingCleaning)
+                            {
+                                <tr>
+                                    <td class="numeric-start">@room.RoomNumber</td>
+                                    <td class="numeric">@room.Floor</td>
+                                    <td>@DisplayText.Describe(room.Size)</td>
+                                    <td><StatusBadge HousekeepingStatus="room.HousekeepingStatus" /></td>
+                                    <td><StatusBadge RoomStatus="room.Status" /></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+    }
+</div>
+
+@code {
+    /// <summary>Underrubrikken med dagens dato.</summary>
+    private string SubtitleText => $"Where things stand on {AdminFormat.Date(ViewModel.Today)}";
+
+    /// <summary>Henter dagens tal når skærmen åbnes.</summary>
+    protected override Task OnInitializedAsync() => ViewModel.InitializeAsync();
+
+    /// <summary>Videresender opdateringsknappen til viewmodellen.</summary>
+    private Task RefreshAsync() => ViewModel.RefreshAsync();
+}

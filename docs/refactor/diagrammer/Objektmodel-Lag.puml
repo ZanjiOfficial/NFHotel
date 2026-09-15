@@ -1,6 +1,6 @@
 @startuml Objektmodel-Lag
 ' =====================================================================
-' Floozys Hotel 2.0 — Objektmodel, lagstruktur
+' NFHotel 2.0 — Objektmodel, lagstruktur
 ' Genereret 2026-09-08 ud fra den faktiske kode.
 '
 ' Klasser og interfaces på tværs af de fire lag, uden medlemslister.
