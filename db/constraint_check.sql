@@ -2,7 +2,7 @@
 -- Verifikation af exclusion constrainten (A-01, B-03)
 -- =====================================================================
 -- Kør EFTER seed_dev.sql:
---   docker exec -i floozys-postgres psql -U floozys -d floozys_hotel < db/constraint_check.sql
+--   docker exec -i nfhotel-postgres psql -U nfhotel -d nfhotel < db/constraint_check.sql
 --
 -- Dette er den vigtigste enkeltmekanisme i hele designet: den gør
 -- dobbeltbooking fysisk umulig, også hvis to brugere trykker samtidig.

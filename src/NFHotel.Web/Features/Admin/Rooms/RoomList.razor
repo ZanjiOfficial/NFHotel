@@ -1,0 +1,383 @@
+@page "/admin/rooms"
+@layout NFHotel.Web.Components.Layout.AdminLayout
+@rendermode InteractiveServer
+@using NFHotel.Domain.Rooms
+@using NFHotel.Web.Features.Admin.Rooms
+@inject RoomListViewModel ViewModel
+@inject RoomFormViewModel Form
+
+@*
+    Rumoversigt med filtre, rengøringsforløb og opret/ret.
+
+    Kun markup og binding. Handlingspanelet tegner de knapper viewmodellen udleverer, og
+    de kommer fra RoomListItemDto.Actions — altså fra domænets tilstandsmaskine gennem
+    Application. Denne fil ved ikke hvad "slutrengøring" kommer efter.
+
+    Formularen har bevidst intet statusfelt: UpdateRoomRequest bærer det ikke, og
+    statusskift har egne use cases (A-08) med egne knapper i handlingspanelet.
+*@
+
+<PageTitle>Rooms — administration</PageTitle>
+
+<div class="stack-lg">
+    <PageHeader Title="Rooms"
+                Subtitle="Status, housekeeping and details for every room in the hotel.">
+        <Actions>
+            <button type="button"
+                    class="btn btn-primary"
+                    disabled="@Form.IsBusy"
+                    @onclick="BeginCreate">
+                New room
+            </button>
+        </Actions>
+    </PageHeader>
+
+    @if (!string.IsNullOrWhiteSpace(Form.SuccessMessage))
+    {
+        <AlertBox Kind="AlertKind.Ok" Message="@Form.SuccessMessage" />
+    }
+
+    @if (!string.IsNullOrWhiteSpace(ViewModel.SuccessMessage))
+    {
+        <AlertBox Kind="AlertKind.Ok" Message="@ViewModel.SuccessMessage" />
+    }
+
+    <ErrorAlert Errors="ViewModel.Errors" />
+
+    @if (Form.IsOpen)
+    {
+        <section class="card card-pad stack" aria-labelledby="room-form">
+            <h2 class="subtitle" id="room-form">@Form.Title</h2>
+
+            <ErrorAlert Errors="Form.Errors" />
+
+            <AlertBox Kind="AlertKind.Info"
+                      Message="Room status and housekeeping are changed with the buttons in the actions panel — not from this form." />
+
+            <div class="field-row">
+                <FormField Label="Room number" For="room-number" IsRequired="true">
+                    <input id="room-number"
+                           class="field-input"
+                           disabled="@Form.IsBusy"
+                           @bind="Form.RoomNumber" />
+                </FormField>
+
+                <FormField Label="Floor" For="room-floor" IsRequired="true">
+                    <input id="room-floor"
+                           type="number"
+                           min="1"
+                           class="field-input"
+                           disabled="@Form.IsBusy"
+                           @bind="Form.Floor" />
+                </FormField>
+            </div>
+
+            <div class="field-row">
+                <FormField Label="Size" For="room-size" IsRequired="true">
+                    <select id="room-size"
+                            class="field-select"
+                            disabled="@Form.IsBusy"
+                            @bind="Form.Size">
+                        @foreach (var size in Form.Sizes)
+                        {
+                            <option value="@size">@DisplayText.Describe(size)</option>
+                        }
+                    </select>
+                </FormField>
+
+                <FormField Label="Capacity" For="room-capacity" IsRequired="true"
+                           Hint="How many people the room sleeps.">
+                    <input id="room-capacity"
+                           type="number"
+                           min="1"
+                           class="field-input"
+                           disabled="@Form.IsBusy"
+                           @bind="Form.Capacity" />
+                </FormField>
+            </div>
+
+            <div class="row">
+                <button type="button"
+                        class="btn btn-primary"
+                        disabled="@(!Form.CanSave)"
+                        @onclick="SaveAsync">
+                    Save room
+                </button>
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        disabled="@Form.IsBusy"
+                        @onclick="CloseForm">
+                    Cancel
+                </button>
+            </div>
+        </section>
+    }
+
+    <section class="panel stack" aria-labelledby="room-filter">
+        <h2 class="subtitle" id="room-filter">Filter</h2>
+
+        <div class="field-row">
+            <FormField Label="Floor" For="filter-floor">
+                <select id="filter-floor"
+                        class="field-select"
+                        disabled="@ViewModel.IsBusy"
+                        @bind="ViewModel.FilterFloor">
+                    <option value="">All floors</option>
+                    @foreach (var floor in Floors)
+                    {
+                        <option value="@floor">@floor</option>
+                    }
+                </select>
+            </FormField>
+
+            <FormField Label="Size" For="filter-size">
+                <select id="filter-size"
+                        class="field-select"
+                        disabled="@ViewModel.IsBusy"
+                        @bind="ViewModel.FilterSize">
+                    <option value="">All sizes</option>
+                    @foreach (var size in Sizes)
+                    {
+                        <option value="@size">@DisplayText.Describe(size)</option>
+                    }
+                </select>
+            </FormField>
+
+            <FormField Label="Status" For="filter-status">
+                <select id="filter-status"
+                        class="field-select"
+                        disabled="@ViewModel.IsBusy"
+                        @bind="ViewModel.FilterStatus">
+                    <option value="">All room statuses</option>
+                    @foreach (var status in RoomStatuses)
+                    {
+                        <option value="@status">@DisplayText.Describe(status)</option>
+                    }
+                </select>
+            </FormField>
+
+            <FormField Label="Housekeeping" For="filter-housekeeping">
+                <select id="filter-housekeeping"
+                        class="field-select"
+                        disabled="@ViewModel.IsBusy"
+                        @bind="ViewModel.FilterHousekeepingStatus">
+                    <option value="">All housekeeping statuses</option>
+                    @foreach (var status in HousekeepingStatuses)
+                    {
+                        <option value="@status">@DisplayText.Describe(status)</option>
+                    }
+                </select>
+            </FormField>
+        </div>
+
+        <div class="row">
+            <button type="button"
+                    class="btn btn-primary"
+                    disabled="@ViewModel.IsBusy"
+                    @onclick="SearchAsync">
+                Search
+            </button>
+
+            <button type="button"
+                    class="btn btn-ghost"
+                    disabled="@(ViewModel.IsBusy || !ViewModel.HasFilter)"
+                    @onclick="ClearFilterAsync">
+                Clear filter
+            </button>
+        </div>
+    </section>
+
+    @if (ViewModel.SelectedRoom is { } selectedRoom)
+    {
+        <section class="card card-pad stack" aria-labelledby="room-actions">
+            <h2 class="subtitle" id="room-actions">Room @selectedRoom.RoomNumber</h2>
+
+            <div class="row">
+                <StatusBadge RoomStatus="selectedRoom.Status" />
+                <StatusBadge HousekeepingStatus="selectedRoom.HousekeepingStatus" />
+            </div>
+
+            @if (ViewModel.AvailableActions.Count == 0)
+            {
+                <p class="muted">
+                    There is nothing to do on this room while it is in its current state.
+                </p>
+            }
+            else
+            {
+                <div class="row" role="group" aria-label="Room actions">
+                    @foreach (var option in ViewModel.AvailableActions)
+                    {
+                        <button type="button"
+                                class="btn btn-secondary btn-sm"
+                                disabled="@ViewModel.IsBusy"
+                                @onclick="() => ExecuteAsync(option.Action)">
+                            @option.Label
+                        </button>
+                    }
+                </div>
+            }
+        </section>
+    }
+
+    @if (ViewModel.RoomPendingDeletion is not null)
+    {
+        <ConfirmPanel Title="@DeleteTitle"
+                      Message="The room is removed for good. If it still has bookings on it, the deletion is refused."
+                      ConfirmLabel="Delete room"
+                      IsBusy="ViewModel.IsBusy"
+                      OnConfirm="ConfirmDeleteAsync"
+                      OnCancel="AbortDelete" />
+    }
+
+    @if (!ViewModel.IsLoaded)
+    {
+        <LoadingSkeleton Rows="8" />
+    }
+    else if (ViewModel.IsEmpty && ViewModel.HasFilter)
+    {
+        <EmptyState Title="No rooms match the filter"
+                    Description="Clear the filter to see every room in the hotel again.">
+            <button type="button" class="btn btn-secondary btn-sm" @onclick="ClearFilterAsync">
+                Clear filter
+            </button>
+        </EmptyState>
+    }
+    else if (ViewModel.IsEmpty)
+    {
+        <EmptyState Title="There are no rooms yet"
+                    Description="Create the hotel's first room so guests have something to book.">
+            <button type="button" class="btn btn-primary btn-sm" @onclick="BeginCreate">
+                New room
+            </button>
+        </EmptyState>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table class="table">
+                <caption>@ViewModel.Rooms.Count rooms</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Room</th>
+                        <th scope="col" class="numeric">Floor</th>
+                        <th scope="col">Size</th>
+                        <th scope="col" class="numeric">Sleeps</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Housekeeping</th>
+                        <th scope="col" class="table-actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var room in ViewModel.Rooms)
+                    {
+                        <tr>
+                            <td class="numeric-start">@room.RoomNumber</td>
+                            <td class="numeric">@room.Floor</td>
+                            <td>@DisplayText.Describe(room.Size)</td>
+                            <td class="numeric">@room.Capacity</td>
+                            <td><StatusBadge RoomStatus="room.Status" /></td>
+                            <td><StatusBadge HousekeepingStatus="room.HousekeepingStatus" /></td>
+                            <td class="table-actions">
+                                <button type="button"
+                                        class="btn btn-secondary btn-sm"
+                                        disabled="@ViewModel.IsBusy"
+                                        @onclick="() => ToggleSelection(room)">
+                                    @SelectLabel(room)
+                                </button>
+
+                                <button type="button"
+                                        class="btn btn-secondary btn-sm"
+                                        disabled="@Form.IsBusy"
+                                        @onclick="() => BeginEditAsync(room)">
+                                    Edit
+                                </button>
+
+                                <button type="button"
+                                        class="btn btn-danger btn-sm"
+                                        disabled="@ViewModel.IsBusy"
+                                        @onclick="() => RequestDelete(room)">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>Alle rumstørrelser, til filterets dropdown.</summary>
+    private static readonly RoomSize[] Sizes = Enum.GetValues<RoomSize>();
+
+    /// <summary>Alle driftsstatusser, til filterets dropdown.</summary>
+    private static readonly RoomStatus[] RoomStatuses = Enum.GetValues<RoomStatus>();
+
+    /// <summary>Alle rengøringsstatusser, til filterets dropdown.</summary>
+    private static readonly HousekeepingStatus[] HousekeepingStatuses = Enum.GetValues<HousekeepingStatus>();
+
+    /// <summary>Etagerne der faktisk findes, hentet med filtermulighederne.</summary>
+    private IReadOnlyList<int> Floors =>
+        ViewModel.FilterOptions?.Floors ?? Array.Empty<int>();
+
+    /// <summary>Overskriften i bekræftelsen af en sletning.</summary>
+    private string DeleteTitle => $"Delete room {ViewModel.RoomPendingDeletion?.RoomNumber}?";
+
+    /// <summary>Henter filtermuligheder og den første liste når skærmen åbnes.</summary>
+    protected override Task OnInitializedAsync() => ViewModel.InitializeAsync();
+
+    /// <summary>Teksten på knappen der åbner og lukker handlingspanelet.</summary>
+    private string SelectLabel(RoomListItemDto room) =>
+        ViewModel.IsSelected(room) ? "Hide actions" : "Actions";
+
+    private Task SearchAsync() => ViewModel.SearchAsync();
+
+    private Task ClearFilterAsync() => ViewModel.ClearFilterAsync();
+
+    private void ToggleSelection(RoomListItemDto room) => ViewModel.ToggleSelection(room);
+
+    private Task ExecuteAsync(RoomAction action) => ViewModel.ExecuteAsync(action);
+
+    private void RequestDelete(RoomListItemDto room)
+    {
+        ViewModel.DismissSuccess();
+        ViewModel.RequestDelete(room);
+    }
+
+    private void AbortDelete() => ViewModel.AbortDelete();
+
+    private Task ConfirmDeleteAsync() => ViewModel.ConfirmDeleteAsync();
+
+    private void BeginCreate()
+    {
+        Form.DismissSuccess();
+        ViewModel.DismissSuccess();
+        Form.BeginCreate();
+    }
+
+    private Task BeginEditAsync(RoomListItemDto room)
+    {
+        Form.DismissSuccess();
+        ViewModel.DismissSuccess();
+
+        return Form.BeginEditAsync(room.RoomId);
+    }
+
+    private void CloseForm() => Form.Close();
+
+    /// <summary>
+    /// Gemmer formularen og henter listen igen, hvis det lykkedes.
+    /// </summary>
+    private async Task SaveAsync()
+    {
+        await Form.SaveAsync();
+
+        if (Form.SavedSuccessfully)
+        {
+            await ViewModel.SearchAsync();
+        }
+    }
+}

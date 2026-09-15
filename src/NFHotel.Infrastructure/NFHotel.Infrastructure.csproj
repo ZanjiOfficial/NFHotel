@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    NFHotel.Infrastructure er det ENESTE projekt der kender EF Core og Npgsql
+    (Architecture.md afsnit 2). Application må ikke have en eneste PackageReference.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NFHotel.Application\NFHotel.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EFCore.NamingConventions" Version="9.0.0" />
+
+    <!--
+      Eksplicit og pinnet: EFCore.NamingConventions 9.0.0 trækker Relational 9.0.1, mens
+      Npgsql-provideren trækker 9.0.4. Uden denne linje arver de projekter der refererer
+      Infrastructure den laveste version og bygger med MSB3277-advarsler.
+    -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.4" />
+
+    <!--
+      compile-assets er bevidst slået til: HotelDbContextFactory implementerer
+      IDesignTimeDbContextFactory<T>, som kun findes i Design-pakken. Uden den kan
+      migrationen ikke genereres, fordi HotelDbContext har en afhængighed ud over
+      DbContextOptions (IStringEncryptor, B-09). PrivateAssets=all sikrer stadig at
+      pakken ikke flyder videre til Web eller til testprojekterne.
+    -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.4">
+      <IncludeAssets>compile; runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.4" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+  </ItemGroup>
+
+</Project>

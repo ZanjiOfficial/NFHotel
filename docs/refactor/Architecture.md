@@ -1,4 +1,4 @@
-# Architecture.md — Floozys Hotel 2.0
+# Architecture.md — NFHotel 2.0
 
 > Fase 1 (Opgave 1b). Udarbejdet 2026-09-07 af tre agenter (`design:domain`, `design:layers`, `design:diagrams`) og konsolideret her.
 > **Dette dokument har forrang.** Bilagene `Architecture-Domain.md`, `Architecture-Layers.md` og `Architecture-Diagrams.md` er agenternes fulde output og er kun gældende hvor de ikke modsiger dette dokument.
@@ -20,33 +20,33 @@ Ikke i denne omgang: API-projektet som kode, Flutter-app, kundeside, auth-implem
 ## 2. Projektstruktur
 
 ```
-Floozys.Hotel.sln
+NFHotel.sln
 ├── src/
-│   ├── Floozys.Hotel.Domain/          # nul projektreferencer, nul NuGet-pakker
+│   ├── NFHotel.Domain/          # nul projektreferencer, nul NuGet-pakker
 │   │   ├── Common/                    DateRange, DomainException, InvalidStateTransitionException
 │   │   ├── Bookings/                  Booking, BookingStatus, BookingRules
 │   │   ├── Guests/                    Guest, GuestRules
 │   │   └── Rooms/                     Room, RoomStatus, HousekeepingStatus, RoomSize, RoomRules
-│   ├── Floozys.Hotel.Application/     # feature-først; må ikke referere EF Core, Npgsql, ASP.NET
+│   ├── NFHotel.Application/     # feature-først; må ikke referere EF Core, Npgsql, ASP.NET
 │   │   ├── Common/                    Result, ErrorCodes, IClock, IUnitOfWork
 │   │   ├── Bookings/                  IBookingService, BookingService, IBookingRepository, DTOer, mapping
 │   │   ├── Rooms/
 │   │   └── Guests/
-│   ├── Floozys.Hotel.Infrastructure/  # EF Core og Npgsql bor KUN her
+│   ├── NFHotel.Infrastructure/  # EF Core og Npgsql bor KUN her
 │   │   ├── Persistence/               HotelDbContext, Configurations/, Migrations/
 │   │   ├── Repositories/
 │   │   ├── Security/                  AesGcmStringEncryptor
 │   │   └── Time/                      SystemClock
-│   └── Floozys.Hotel.Web/             # Blazor Server, feature-først, composition root
+│   └── NFHotel.Web/             # Blazor Server, feature-først, composition root
 └── tests/
-    ├── Floozys.Hotel.Domain.Tests/
-    ├── Floozys.Hotel.Application.Tests/       # + arkitekturtest
-    └── Floozys.Hotel.Infrastructure.Tests/    # Testcontainers, postgres:16
+    ├── NFHotel.Domain.Tests/
+    ├── NFHotel.Application.Tests/       # + arkitekturtest
+    └── NFHotel.Infrastructure.Tests/    # Testcontainers, postgres:16
 
 # Del af målarkitekturen, bygges IKKE i Fase 1:
-#   src/Floozys.Hotel.Api/       REST over Application (mobil-guilden)
+#   src/NFHotel.Api/       REST over Application (mobil-guilden)
 #   src/.../Web/Customer/        kundeside (frontend-guilden)
-#   mobile/floozys_hotel_app/    Flutter (mobil-guilden)
+#   mobile/nfhotel_app/    Flutter (mobil-guilden)
 ```
 
 Afhængighedsretningen er `Web → Application → Domain` og `Web → Infrastructure → Application → Domain`. Domain har **udgrad nul**. Det håndhæves af en arkitekturtest, ikke af disciplin.

@@ -290,20 +290,20 @@ Alle tre tabeller bærer desuden systemkolonnen `xmin` som optimistisk samtidigh
 ```mermaid
 flowchart TB
     subgraph LWeb [Ydre lag - praesentation]
-        Web["Floozys.Hotel.Web<br/>Blazor Server<br/>Razor og Program.cs - composition root"]
-        Api["Floozys.Hotel.Api<br/>PLANLAGT - bygges ikke i Fase 1"]
+        Web["NFHotel.Web<br/>Blazor Server<br/>Razor og Program.cs - composition root"]
+        Api["NFHotel.Api<br/>PLANLAGT - bygges ikke i Fase 1"]
     end
 
     subgraph LInfra [Infrastrukturlag]
-        Infra["Floozys.Hotel.Infrastructure<br/>HotelDbContext og Configurations<br/>Repositories UnitOfWork SystemClock<br/>AesGcmStringEncryptor<br/>EF Core og Npgsql bor KUN her"]
+        Infra["NFHotel.Infrastructure<br/>HotelDbContext og Configurations<br/>Repositories UnitOfWork SystemClock<br/>AesGcmStringEncryptor<br/>EF Core og Npgsql bor KUN her"]
     end
 
     subgraph LApp [Applikationslag]
-        App["Floozys.Hotel.Application<br/>BookingService RoomService GuestService<br/>Repository-interfaces IUnitOfWork IClock<br/>DTOer Requests Result ErrorCodes"]
+        App["NFHotel.Application<br/>BookingService RoomService GuestService<br/>Repository-interfaces IUnitOfWork IClock<br/>DTOer Requests Result ErrorCodes"]
     end
 
     subgraph LDom [Domaenelag - kerne]
-        Dom["Floozys.Hotel.Domain<br/>Booking Room Guest DateRange<br/>BookingRules GuestRules RoomRules<br/>BookingStatus RoomStatus HousekeepingStatus RoomSize<br/>NUL projektreferencer og NUL NuGet-pakker"]
+        Dom["NFHotel.Domain<br/>Booking Room Guest DateRange<br/>BookingRules GuestRules RoomRules<br/>BookingStatus RoomStatus HousekeepingStatus RoomSize<br/>NUL projektreferencer og NUL NuGet-pakker"]
     end
 
     Web --> App

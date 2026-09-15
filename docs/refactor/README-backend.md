@@ -1,4 +1,4 @@
-# Floozys Hotel 2.0
+# NFHotel 2.0
 
 Personale-backoffice på web, porteret fra WPF. Blazor Server oven på Clean Architecture med
 EF Core og PostgreSQL.
@@ -37,15 +37,15 @@ Sæt din connection string i `appsettings.Development.json` (se **Konfiguration*
 
 ### 2. Kør migrationerne
 
-Designtidskonteksten læser sin connection string fra `FLOOZYS_HOTEL_CONNECTION` og falder
+Designtidskonteksten læser sin connection string fra `NFHOTEL_CONNECTION` og falder
 ellers tilbage til `Username=postgres;Password=postgres` — sæt derfor variablen:
 
 ```bash
-export FLOOZYS_HOTEL_CONNECTION="Host=localhost;Port=5432;Database=floozys_hotel;Username=floozys;Password=floozys_dev"
+export NFHOTEL_CONNECTION="Host=localhost;Port=5432;Database=nfhotel;Username=nfhotel;Password=nfhotel_dev"
 
 dotnet ef database update \
-  --project src/Floozys.Hotel.Infrastructure \
-  --startup-project src/Floozys.Hotel.Web
+  --project src/NFHotel.Infrastructure \
+  --startup-project src/NFHotel.Web
 ```
 
 Migrationen opretter selv `btree_gist`-extensionen og bookingens exclusion constraint
@@ -54,7 +54,7 @@ Migrationen opretter selv `btree_gist`-extensionen og bookingens exclusion const
 ### 3. Start appen
 
 ```bash
-dotnet run --project src/Floozys.Hotel.Web
+dotnet run --project src/NFHotel.Web
 ```
 
 `http://localhost:5062` eller `https://localhost:7060` (se `Properties/launchSettings.json`).
@@ -68,7 +68,7 @@ Databasen er tom efter migrationen, så alle lister starter tomme. Seed-scriptet
 10 rum, 8 gæster og 12 bookinger med datoer relative til i dag, så check-in kan afprøves:
 
 ```bash
-psql "$FLOOZYS_HOTEL_CONNECTION" -f db/seed_dev.sql
+psql "$NFHOTEL_CONNECTION" -f db/seed_dev.sql
 ```
 
 `db/constraint_check.sql` verificerer at exclusion constrainten faktisk virker — kør den
@@ -82,8 +82,8 @@ efter seed-scriptet på samme måde. Se `docs/Testplan.md` for hvad der er værd
 Kopiér skabelonen og udfyld den:
 
 ```bash
-cp src/Floozys.Hotel.Web/appsettings.Development.json.example \
-   src/Floozys.Hotel.Web/appsettings.Development.json
+cp src/NFHotel.Web/appsettings.Development.json.example \
+   src/NFHotel.Web/appsettings.Development.json
 ```
 
 Generér din egen krypteringsnøgle:
@@ -121,10 +121,10 @@ dotnet test
 
 ```
 src/
-  Floozys.Hotel.Domain/          entiteter, værdiobjekter, regler. Nul afhængigheder
-  Floozys.Hotel.Application/     use cases, DTOer, Result og fejlkoder
-  Floozys.Hotel.Infrastructure/  EF Core, Npgsql, kryptering, ur. Eneste sted med SQL
-  Floozys.Hotel.Web/             Blazor Server, feature-først, composition root
+  NFHotel.Domain/          entiteter, værdiobjekter, regler. Nul afhængigheder
+  NFHotel.Application/     use cases, DTOer, Result og fejlkoder
+  NFHotel.Infrastructure/  EF Core, Npgsql, kryptering, ur. Eneste sted med SQL
+  NFHotel.Web/             Blazor Server, feature-først, composition root
 ```
 
 I `Web` ligger hver skærm i `Features/<Feature>/` som en `.razor` med markup og en

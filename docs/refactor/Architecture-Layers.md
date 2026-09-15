@@ -4,7 +4,7 @@
 
 # Designdokument — `Application` og `Infrastructure` (Fase 1)
 
-Agent: `design:layers`. Kilder læst: `BusinessRules.md` (126 regler), `Analysis.md` afsnit 1–5, `Conventions.md`, `Floozys-Refactor-Plan.md` afsnit 1–3 + 7, `Fase1-Scope.md`, `Decisions.md`.
+Agent: `design:layers`. Kilder læst: `BusinessRules.md` (126 regler), `Analysis.md` afsnit 1–5, `Conventions.md`, `NFHotel-Refactor-Plan.md` afsnit 1–3 + 7, `Fase1-Scope.md`, `Decisions.md`.
 
 Præmisserne B-03, B-05, B-06, B-07, B-08, B-09 er lagt til grund og gentænkes ikke. Entiteter, enums og domæneregler er `design:domain`s område; hvor jeg er afhængig af deres valg, står det som en eksplicit afhængighed i afsnit 10.
 
@@ -15,17 +15,17 @@ Præmisserne B-03, B-05, B-06, B-07, B-08, B-09 er lagt til grund og gentænkes 
 ### 1.1 Solution
 
 ```
-Floozys.Hotel.sln
+NFHotel.sln
 ├── src/
-│   ├── Floozys.Hotel.Domain/          (design:domain)
-│   ├── Floozys.Hotel.Application/     ← dette dokument
-│   ├── Floozys.Hotel.Infrastructure/  ← dette dokument
-│   ├── Floozys.Hotel.Web/             (design:web — kun DI-kontrakten her)
-│   └── Floozys.Hotel.Api/             TEGNES, BYGGES IKKE (D-09)
+│   ├── NFHotel.Domain/          (design:domain)
+│   ├── NFHotel.Application/     ← dette dokument
+│   ├── NFHotel.Infrastructure/  ← dette dokument
+│   ├── NFHotel.Web/             (design:web — kun DI-kontrakten her)
+│   └── NFHotel.Api/             TEGNES, BYGGES IKKE (D-09)
 └── tests/
-    ├── Floozys.Hotel.Domain.Tests/
-    ├── Floozys.Hotel.Application.Tests/
-    └── Floozys.Hotel.Infrastructure.Tests/
+    ├── NFHotel.Domain.Tests/
+    ├── NFHotel.Application.Tests/
+    └── NFHotel.Infrastructure.Tests/
 ```
 
 Referencer, én vej: `Web → Application → Domain` og `Web → Infrastructure → Application → Domain`. **`Application` må ikke referere EF Core, Npgsql eller ASP.NET.** Det håndhæves af en arkitekturtest, ikke af disciplin (afsnit 9).
@@ -36,12 +36,12 @@ Referencer, én vej: `Web → Application → Domain` og `Web → Infrastructure
 
 Konsekvens: én feature-mappe rummer sit service-interface, sin service, sit repository-interface, sine DTO'er og sin mapping. En udvikler der skal ændre "opret booking" åbner én mappe.
 
-### 1.3 `Floozys.Hotel.Application`
+### 1.3 `NFHotel.Application`
 
 ```
-src/Floozys.Hotel.Application/
-├── Floozys.Hotel.Application.csproj
-│     ProjectReference: Floozys.Hotel.Domain
+src/NFHotel.Application/
+├── NFHotel.Application.csproj
+│     ProjectReference: NFHotel.Domain
 │     PackageReference: Microsoft.Extensions.DependencyInjection.Abstractions
 │                       Microsoft.Extensions.Options
 │     (INGEN EF Core, INGEN Npgsql)
@@ -109,16 +109,16 @@ src/Floozys.Hotel.Application/
         └── GuestMappings.cs
 ```
 
-Namespaces følger mapperne: `Floozys.Hotel.Application.Bookings.Dtos` osv. Én public type pr. fil, filnavn = typenavn (Conventions).
+Namespaces følger mapperne: `NFHotel.Application.Bookings.Dtos` osv. Én public type pr. fil, filnavn = typenavn (Conventions).
 
 `GuestFields` ligger i `Guests/Requests/` og bruges også af `Bookings` (BR-47, gæst oprettes sammen med bookingen). Det er den eneste tilladte krydsreference mellem feature-mapper, og den går altid mod en request/DTO — aldrig mod en anden features service.
 
-### 1.4 `Floozys.Hotel.Infrastructure`
+### 1.4 `NFHotel.Infrastructure`
 
 ```
-src/Floozys.Hotel.Infrastructure/
-├── Floozys.Hotel.Infrastructure.csproj
-│     ProjectReference: Floozys.Hotel.Application
+src/NFHotel.Infrastructure/
+├── NFHotel.Infrastructure.csproj
+│     ProjectReference: NFHotel.Application
 │     PackageReference: Npgsql.EntityFrameworkCore.PostgreSQL
 │                       EFCore.NamingConventions
 │                       Microsoft.EntityFrameworkCore.Design (PrivateAssets=all)
@@ -168,7 +168,7 @@ Fire regler, alle direkte modsvar til fund i `Analysis.md` afsnit 2:
 ### 2.2 `IBookingRepository`
 
 ```csharp
-namespace Floozys.Hotel.Application.Bookings;
+namespace NFHotel.Application.Bookings;
 
 public interface IBookingRepository
 {
@@ -240,7 +240,7 @@ public interface IBookingRepository
 ### 2.3 `IRoomRepository`
 
 ```csharp
-namespace Floozys.Hotel.Application.Rooms;
+namespace NFHotel.Application.Rooms;
 
 public interface IRoomRepository
 {
@@ -294,7 +294,7 @@ public interface IRoomRepository
 ### 2.4 `IGuestRepository`
 
 ```csharp
-namespace Floozys.Hotel.Application.Guests;
+namespace NFHotel.Application.Guests;
 
 public interface IGuestRepository
 {
@@ -346,7 +346,7 @@ Alternativet er selv-gemmende repositories, hvor `Add` internt kalder `SaveChang
 Interfacet holdes minimalt:
 
 ```csharp
-namespace Floozys.Hotel.Application.Abstractions.Persistence;
+namespace NFHotel.Application.Abstractions.Persistence;
 
 public interface IUnitOfWork
 {
@@ -367,7 +367,7 @@ Fælles form: konstruktørinjektion (Conventions), `CancellationToken` sidst, `R
 ### 3.1 `IBookingService`
 
 ```csharp
-namespace Floozys.Hotel.Application.Bookings;
+namespace NFHotel.Application.Bookings;
 
 public interface IBookingService
 {
@@ -443,7 +443,7 @@ Bemærk placeringen af `GetAvailableRoomsAsync`: den returnerer rum, men reglen 
 ### 3.2 `IRoomService`
 
 ```csharp
-namespace Floozys.Hotel.Application.Rooms;
+namespace NFHotel.Application.Rooms;
 
 public interface IRoomService
 {
@@ -510,7 +510,7 @@ public sealed class RoomService : IRoomService
 ### 3.3 `IGuestService`
 
 ```csharp
-namespace Floozys.Hotel.Application.Guests;
+namespace NFHotel.Application.Guests;
 
 public interface IGuestService
 {
@@ -699,7 +699,7 @@ public sealed record UpdateGuestRequest(int GuestId, GuestFields Fields);
 **Eksplicit, håndskrevet, én statisk mapper-klasse pr. feature**, placeret i `<Feature>/Mapping/`, med extension-metoder:
 
 ```csharp
-namespace Floozys.Hotel.Application.Bookings.Mapping;
+namespace NFHotel.Application.Bookings.Mapping;
 
 public static class BookingMappings
 {
@@ -738,7 +738,7 @@ Begrundelse:
 ### 5.2 Typerne
 
 ```csharp
-namespace Floozys.Hotel.Application.Common.Results;
+namespace NFHotel.Application.Common.Results;
 
 public sealed record Error(string Code, string Message);
 
@@ -825,7 +825,7 @@ Tilsvarende: `23505` (unique violation) → `UniqueConstraintViolationException`
 ### 6.1 `HotelDbContext`
 
 ```csharp
-namespace Floozys.Hotel.Infrastructure.Persistence;
+namespace NFHotel.Infrastructure.Persistence;
 
 public sealed class HotelDbContext : DbContext
 {
@@ -973,7 +973,7 @@ Migrations køres **ikke** automatisk ved opstart i andet end Development. `cont
 
 ### 7.1 Composition root
 
-`Floozys.Hotel.Web/Program.cs` er composition root (Conventions). Den kender to extension-metoder og ellers ingenting om hverken EF eller repositories:
+`NFHotel.Web/Program.cs` er composition root (Conventions). Den kender to extension-metoder og ellers ingenting om hverken EF eller repositories:
 
 ```csharp
 builder.Services.AddApplication();
@@ -984,7 +984,7 @@ builder.Services.AddWebFeatures();   // ViewModels — design:web
 ### 7.2 `AddApplication`
 
 ```csharp
-namespace Floozys.Hotel.Application;
+namespace NFHotel.Application;
 
 public static class DependencyInjection
 {
@@ -1003,7 +1003,7 @@ Ingen assembly-scanning. Tre linjer er lettere at læse end en konvention der fi
 ### 7.3 `AddInfrastructure`
 
 ```csharp
-namespace Floozys.Hotel.Infrastructure;
+namespace NFHotel.Infrastructure;
 
 public static class DependencyInjection
 {
@@ -1123,9 +1123,9 @@ Udgangspunktet er ikke behageligt: 40 af de 128 gamle tests rammer den **samme f
 
 | Projekt | Tester | Afhængigheder | Kørselstid |
 |---|---|---|---|
-| `Floozys.Hotel.Domain.Tests` | Invarianter, datoregler, overlapsfunktionen, statusovergange, `NumberOfNights`, `BookingNumber` | Ingen | Millisekunder |
-| `Floozys.Hotel.Application.Tests` | Use cases: services med mockede repositories og fake `IClock` | Mocks | Millisekunder |
-| `Floozys.Hotel.Infrastructure.Tests` | Skema, mapping, queries, constraints | Testcontainers `postgres:16` | Sekunder |
+| `NFHotel.Domain.Tests` | Invarianter, datoregler, overlapsfunktionen, statusovergange, `NumberOfNights`, `BookingNumber` | Ingen | Millisekunder |
+| `NFHotel.Application.Tests` | Use cases: services med mockede repositories og fake `IClock` | Mocks | Millisekunder |
+| `NFHotel.Infrastructure.Tests` | Skema, mapping, queries, constraints | Testcontainers `postgres:16` | Sekunder |
 
 ### 9.2 `Application.Tests` — det der erstatter de 22 ViewModel-tests
 
@@ -1142,7 +1142,7 @@ Hvad der testes her:
 
 To disciplinkrav: **`IClock` mockes altid** — BR-06, BR-44 og BR-104 handler alle om "i dag", og en test der bruger den rigtige systemtid, holder op med at virke i morgen (det gamle projekt havde præcis det problem indbygget). Og **`Verify(...)` bruges faktisk** — det gamle projekt havde Moq med og brugte mocks udelukkende som stubs, uden en eneste `Verify`.
 
-Desuden en **arkitekturtest** (NetArchTest eller tilsvarende) i dette projekt: `Floozys.Hotel.Application` må ikke have typer der refererer `Microsoft.EntityFrameworkCore` eller `Npgsql`. Lagdeling håndhævet af build, ikke af hukommelse.
+Desuden en **arkitekturtest** (NetArchTest eller tilsvarende) i dette projekt: `NFHotel.Application` må ikke have typer der refererer `Microsoft.EntityFrameworkCore` eller `Npgsql`. Lagdeling håndhævet af build, ikke af hukommelse.
 
 ### 9.3 `Infrastructure.Tests` — Testcontainers, ikke delt database
 
@@ -1206,15 +1206,15 @@ Navngivning per Conventions: `CheckInAsync_ShouldFail_WhenBookingIsAlreadyChecke
 Læste kildedokumenter der styrer implementeringen:
 
 - `/mnt/user-data/uploads/Development/Conventions.md`
-- `/mnt/user-data/uploads/Development/New folder/Floozys.Hotel/docs/BusinessRules.md`
-- `/mnt/user-data/uploads/Development/New folder/Floozys.Hotel/docs/Analysis.md`
-- `/mnt/user-data/uploads/Development/New folder/Floozys.Hotel/docs/Fase1-Scope.md`
-- `/mnt/user-data/uploads/Development/New folder/Floozys-Refactor-Plan.md`
+- `/mnt/user-data/uploads/Development/New folder/NFHotel/docs/BusinessRules.md`
+- `/mnt/user-data/uploads/Development/New folder/NFHotel/docs/Analysis.md`
+- `/mnt/user-data/uploads/Development/New folder/NFHotel/docs/Fase1-Scope.md`
+- `/mnt/user-data/uploads/Development/New folder/NFHotel-Refactor-Plan.md`
 
 De fem filer der skal skrives først, i denne rækkefølge (planlagte stier under solution-roden):
 
-1. `src/Floozys.Hotel.Application/Common/Results/Result.cs` — alt andet i Application afhænger af returtypen.
-2. `src/Floozys.Hotel.Application/Bookings/IBookingRepository.cs` — definerer kontrakten som både `BookingService` og `BookingRepository` bygges imod.
-3. `src/Floozys.Hotel.Application/Bookings/BookingService.cs` — bærer flest regler og er den metrik Fase 3's ledger-audit måler op imod.
-4. `src/Floozys.Hotel.Infrastructure/Persistence/Configurations/BookingConfiguration.cs` — B-03, B-06, B-07 og B-08 mødes her, og migrationen genereres ud fra den.
-5. `src/Floozys.Hotel.Infrastructure/DependencyInjection.cs` — levetider, options-validering og `DbContext`-fabrikken, altså det der afgør om Blazor Server-opsætningen holder.
+1. `src/NFHotel.Application/Common/Results/Result.cs` — alt andet i Application afhænger af returtypen.
+2. `src/NFHotel.Application/Bookings/IBookingRepository.cs` — definerer kontrakten som både `BookingService` og `BookingRepository` bygges imod.
+3. `src/NFHotel.Application/Bookings/BookingService.cs` — bærer flest regler og er den metrik Fase 3's ledger-audit måler op imod.
+4. `src/NFHotel.Infrastructure/Persistence/Configurations/BookingConfiguration.cs` — B-03, B-06, B-07 og B-08 mødes her, og migrationen genereres ud fra den.
+5. `src/NFHotel.Infrastructure/DependencyInjection.cs` — levetider, options-validering og `DbContext`-fabrikken, altså det der afgør om Blazor Server-opsætningen holder.

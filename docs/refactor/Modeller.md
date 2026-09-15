@@ -1,7 +1,7 @@
 # Domænemodel og objektmodel
 
 > Genereret 2026-09-08 **ud fra den faktiske kode**, ikke fra designdokumenterne.
-> Kilder: `src/Floozys.Hotel.Domain/`, `src/Floozys.Hotel.Application/`, `src/Floozys.Hotel.Infrastructure/`, `src/Floozys.Hotel.Web/`.
+> Kilder: `src/NFHotel.Domain/`, `src/NFHotel.Application/`, `src/NFHotel.Infrastructure/`, `src/NFHotel.Web/`.
 >
 > To modeller med hvert sit formål:
 > - **Domænemodellen** beskriver forretningens begreber. Den kunne diskuteres med en hotelchef.

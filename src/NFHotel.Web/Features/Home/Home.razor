@@ -1,0 +1,99 @@
+@page "/"
+@layout NFHotel.Web.Components.Layout.PublicLayout
+
+@*
+    Forsiden. Ren markup uden ViewModel, fordi siden ikke henter data — den skal kunne
+    vises selv når databasen er nede, så vejen til /book aldrig lukker.
+
+    Alt indhold stammer fra nfhotel.com. Der er med vilje intet opdigtet her:
+    intet telefonnummer, intet gadenummer, ingen check-ind-tider, intet værelsesantal.
+    Står det ikke på hotellets egen side, står det ikke her.
+*@
+
+<PageTitle>NFHotel &amp; Bar — Street 172, Phnom Penh</PageTitle>
+
+<section class="hero">
+    <div class="hero-body">
+        <span class="eyebrow">Street 172 &middot; Phnom Penh, Cambodia</span>
+
+        <h1 class="display">NFHotel &amp; Bar</h1>
+
+        <p class="lede">
+            Comfortable, quiet rooms in the middle of everything. At NFHotel there is
+            barely a reason to head out: the kitchen, the bar and reception are open
+            around the clock, and we have nightly, monthly and short-term rates.
+        </p>
+
+        <div class="row">
+            <a class="btn btn-primary" href="/book">Book your stay</a>
+            <a class="btn btn-secondary" href="#rooms">See our rooms</a>
+        </div>
+    </div>
+</section>
+
+<div class="page stack-lg">
+
+    <div class="grid-auto">
+        <div class="stat">
+            <div class="stat-value">24h</div>
+            <div class="stat-label">Bar &amp; kitchen</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">172</div>
+            <div class="stat-label">The street we're on</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">$20</div>
+            <div class="stat-label">Per night, from</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">2023</div>
+            <div class="stat-label">Renovated in November</div>
+        </div>
+    </div>
+
+    <div class="grid-3">
+        <section class="card card-pad stack" id="rooms">
+            <h2 class="subtitle">Rooms</h2>
+            <p>
+                Comfortable, quiet rooms from $20 a night. Fully renovated in
+                November 2023.
+            </p>
+            <p class="muted">
+                Nightly, monthly and short-term rates — tailored to whatever budget
+                you're travelling on.
+            </p>
+            <a class="btn btn-secondary btn-sm" href="/book">See available rooms</a>
+        </section>
+
+        <section class="card card-pad stack">
+            <h2 class="subtitle">Food &amp; bar</h2>
+            <p>
+                Burgers, local specialities and ice-cold draught beer. The kitchen and
+                the bar are open 24 hours a day.
+            </p>
+            <p class="muted">
+                You never have to leave the building for dinner — or for breakfast at
+                four in the morning.
+            </p>
+        </section>
+
+        <section class="card card-pad stack">
+            <h2 class="subtitle">Finding us</h2>
+            <p>
+                We're on Street 172 in Phnom Penh, Cambodia — one of the liveliest
+                streets in the city.
+            </p>
+            <p class="muted">
+                Questions before you book? Write to
+                <a href="mailto:help@nfhotel.com">help@nfhotel.com</a>.
+                Reception is staffed around the clock.
+            </p>
+        </section>
+    </div>
+
+    <div class="row-between">
+        <p class="lede">Ready to pick your dates?</p>
+        <a class="btn btn-primary" href="/book">Book your stay</a>
+    </div>
+</div>

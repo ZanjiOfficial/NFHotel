@@ -8,23 +8,23 @@
 ## 0. Opsætning
 
 ```powershell
-cd "C:\Users\Outlashed\Development\New folder\Floozys.Hotel"
+cd "C:\Users\Outlashed\Development\New folder\NFHotel"
 
 # 1. Database: en PostgreSQL 16-instans du kan naa.
 #    Hvordan den hostes er DevOps' omraade — projektet kender kun en connection string.
-$env:FLOOZYS_HOTEL_CONNECTION = "Host=...;Port=5432;Database=floozys_hotel;Username=...;Password=..."
+$env:NFHOTEL_CONNECTION = "Host=...;Port=5432;Database=nfhotel;Username=...;Password=..."
 
 # 2. Skema
-dotnet ef database update --project src\Floozys.Hotel.Infrastructure --startup-project src\Floozys.Hotel.Web
+dotnet ef database update --project src\NFHotel.Infrastructure --startup-project src\NFHotel.Web
 
 # 3. Testdata
-psql $env:FLOOZYS_HOTEL_CONNECTION -f db\seed_dev.sql
+psql $env:NFHOTEL_CONNECTION -f db\seed_dev.sql
 
 # 4. Kør
-dotnet run --project src\Floozys.Hotel.Web
+dotnet run --project src\NFHotel.Web
 ```
 
-Den samme connection string skal stå i `src\Floozys.Hotel.Web\appsettings.Development.json`.
+Den samme connection string skal stå i `src\NFHotel.Web\appsettings.Development.json`.
 Databasebrugeren skal kunne oprette extensions — første migration opretter `btree_gist`.
 
 10 rum, 8 gæster, 12 bookinger. Alle datoer er relative til i dag, så check-in altid kan afprøves.
@@ -117,7 +117,7 @@ Seed-dataene er lavet så knapperne kan afprøves. Det er her tilstandsmaskinen 
 - [ ] Bekræft i databasen at det er krypteret:
 
 ```powershell
-psql $env:FLOOZYS_HOTEL_CONNECTION -c "SELECT first_name, passport_number FROM guest WHERE passport_number IS NOT NULL;"
+psql $env:NFHOTEL_CONNECTION -c "SELECT first_name, passport_number FROM guest WHERE passport_number IS NOT NULL;"
 ```
 
 Feltet skal være ulæselig base64 — ikke det du skrev. Åbn samme gæst i UI'et: der står den rigtige værdi. Det er B-09.
@@ -129,7 +129,7 @@ Feltet skal være ulæselig base64 — ikke det du skrev. Åbn samme gæst i UI'
 ## 5. Det UI'et ikke kan teste
 
 ```powershell
-psql $env:FLOOZYS_HOTEL_CONNECTION -f db\constraint_check.sql
+psql $env:NFHOTEL_CONNECTION -f db\constraint_check.sql
 ```
 
 Fem inserts direkte mod databasen, uden om applikationen.
