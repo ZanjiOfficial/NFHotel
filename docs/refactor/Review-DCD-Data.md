@@ -1,7 +1,7 @@
 # Review — Jens' DCD for datadelen
 
 > 2026-09-09. Gennemgang af udkastet holdt op mod den kode der allerede er bygget
-> (`src/Floozys.Hotel.Domain/`) og mod ledgeren i `BusinessRules.md`.
+> (`src/NFHotel.Domain/`) og mod ledgeren i `BusinessRules.md`.
 >
 > Kort version: **prismodellen er stærk og løser et problem vi havde parkeret.** Der er fire
 > steder hvor udkastet og den byggede kode er uenige, og de skal afgøres før nogen skriver

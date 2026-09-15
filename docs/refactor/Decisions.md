@@ -50,7 +50,7 @@ Beslutningen er bevidst midlertidig — holdet vurderer ikke at have nok teknolo
 
 **D-08 (Q-33) — Flutter.**
 
-**D-09 (Q-35) — `Floozys.Hotel.Api` indgår i målarkitekturen.**
+**D-09 (Q-35) — `NFHotel.Api` indgår i målarkitekturen.**
 Tegnes i `Architecture.md` som en del af målbilledet. Bygges ikke i denne omgang — jf. `Fase1-Scope.md`.
 
 **D-10 (Q-34) — Appens formål er rumstatus, ikke check-in.**

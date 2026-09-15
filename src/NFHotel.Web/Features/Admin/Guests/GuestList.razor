@@ -1,0 +1,279 @@
+@page "/admin/guests"
+@layout NFHotel.Web.Components.Layout.AdminLayout
+@rendermode InteractiveServer
+@using NFHotel.Web.Features.Admin.Guests
+@inject GuestListViewModel ViewModel
+
+@*
+    Gæsteoversigt med formular. Kun markup og binding — al logik ligger i
+    GuestListViewModel (B-10). Formularen validerer via IGuestService.ValidateFields, så
+    ingen af BR-52 til BR-56 findes i denne fil.
+
+    Sletning går gennem ConfirmPanel: en gæst uden bookinger forsvinder for altid.
+
+    Pasnummeret vises kun i formularen, hvor det lige er hentet og dekrypteret — aldrig i
+    listen (B-09, D-04). Tabellen viser i stedet om der findes et.
+*@
+
+<PageTitle>Guests — administration</PageTitle>
+
+<div class="stack-lg">
+    <PageHeader Title="Guests"
+                Subtitle="The hotel's guest register.">
+        <Actions>
+            <button type="button"
+                    class="btn btn-primary"
+                    disabled="@ViewModel.IsBusy"
+                    @onclick="BeginCreate">
+                New guest
+            </button>
+        </Actions>
+    </PageHeader>
+
+    @if (!string.IsNullOrWhiteSpace(ViewModel.SuccessMessage))
+    {
+        <AlertBox Kind="AlertKind.Ok" Message="@ViewModel.SuccessMessage" />
+    }
+
+    <ErrorAlert Errors="ViewModel.Errors" />
+
+    @if (ViewModel.IsFormOpen)
+    {
+        <section class="card card-pad stack" aria-labelledby="guest-form">
+            <h2 class="subtitle" id="guest-form">@ViewModel.FormTitle</h2>
+
+            <ErrorAlert Errors="ViewModel.FormErrors" />
+
+            <div class="field-row">
+                <FormField Label="First name" For="guest-first-name" IsRequired="true">
+                    <input id="guest-first-name"
+                           class="field-input"
+                           disabled="@ViewModel.IsBusy"
+                           @bind="ViewModel.FirstName"
+                           @bind:event="oninput"
+                           @bind:after="Validate" />
+                </FormField>
+
+                <FormField Label="Last name" For="guest-last-name" IsRequired="true">
+                    <input id="guest-last-name"
+                           class="field-input"
+                           disabled="@ViewModel.IsBusy"
+                           @bind="ViewModel.LastName"
+                           @bind:event="oninput"
+                           @bind:after="Validate" />
+                </FormField>
+            </div>
+
+            <div class="field-row">
+                <FormField Label="Email" For="guest-email" IsRequired="true">
+                    <input id="guest-email"
+                           type="email"
+                           class="field-input"
+                           disabled="@ViewModel.IsBusy"
+                           @bind="ViewModel.Email"
+                           @bind:event="oninput"
+                           @bind:after="Validate" />
+                </FormField>
+
+                <FormField Label="Phone" For="guest-phone" IsRequired="true">
+                    <input id="guest-phone"
+                           type="tel"
+                           class="field-input"
+                           disabled="@ViewModel.IsBusy"
+                           @bind="ViewModel.PhoneNumber"
+                           @bind:event="oninput"
+                           @bind:after="Validate" />
+                </FormField>
+            </div>
+
+            <div class="field-row">
+                <FormField Label="Country" For="guest-country" IsRequired="true">
+                    <input id="guest-country"
+                           class="field-input"
+                           disabled="@ViewModel.IsBusy"
+                           @bind="ViewModel.Country"
+                           @bind:event="oninput"
+                           @bind:after="Validate" />
+                </FormField>
+
+                <FormField Label="Passport number" For="guest-passport" Hint="Optional. Stored encrypted.">
+                    <input id="guest-passport"
+                           class="field-input"
+                           disabled="@ViewModel.IsBusy"
+                           @bind="ViewModel.PassportNumber"
+                           @bind:event="oninput"
+                           @bind:after="Validate" />
+                </FormField>
+            </div>
+
+            <div class="row">
+                <button type="button"
+                        class="btn btn-primary"
+                        disabled="@(!ViewModel.CanSave || ViewModel.IsBusy)"
+                        @onclick="SaveAsync">
+                    Save guest
+                </button>
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        disabled="@ViewModel.IsBusy"
+                        @onclick="CancelEdit">
+                    Cancel
+                </button>
+            </div>
+        </section>
+    }
+
+    <section class="panel stack" aria-labelledby="guest-search-heading">
+        <h2 class="subtitle" id="guest-search-heading">Search</h2>
+
+        <div class="field-row">
+            <FormField Label="Name, country or email" For="guest-search">
+                <input id="guest-search"
+                       type="search"
+                       class="field-input"
+                       disabled="@ViewModel.IsBusy"
+                       @bind="ViewModel.SearchText" />
+            </FormField>
+        </div>
+
+        <div class="row">
+            <button type="button"
+                    class="btn btn-primary"
+                    disabled="@ViewModel.IsBusy"
+                    @onclick="SearchAsync">
+                Search
+            </button>
+
+            <button type="button"
+                    class="btn btn-ghost"
+                    disabled="@ViewModel.IsBusy"
+                    @onclick="ClearSearchAsync">
+                Clear search
+            </button>
+        </div>
+    </section>
+
+    @if (ViewModel.GuestPendingDeletion is not null)
+    {
+        <ConfirmPanel Title="@DeleteTitle"
+                      Message="The guest is removed from the register for good. If they still have bookings, the deletion is refused."
+                      ConfirmLabel="Delete guest"
+                      IsBusy="ViewModel.IsBusy"
+                      OnConfirm="ConfirmDeleteAsync"
+                      OnCancel="AbortDelete" />
+    }
+
+    @if (!ViewModel.IsLoaded)
+    {
+        <LoadingSkeleton Rows="8" />
+    }
+    else if (ViewModel.IsEmptySearch)
+    {
+        <EmptyState Title="No guests match that search"
+                    Description="Try another spelling, or clear the search to see every guest.">
+            <button type="button" class="btn btn-secondary btn-sm" @onclick="ClearSearchAsync">
+                Clear search
+            </button>
+        </EmptyState>
+    }
+    else if (ViewModel.IsEmpty)
+    {
+        <EmptyState Title="The register is empty"
+                    Description="Create the first guest, or let one be created as part of a booking.">
+            <button type="button" class="btn btn-primary btn-sm" @onclick="BeginCreate">
+                New guest
+            </button>
+        </EmptyState>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table class="table">
+                <caption>@ViewModel.Guests.Count guests</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Phone</th>
+                        <th scope="col">Country</th>
+                        <th scope="col">Passport</th>
+                        <th scope="col" class="table-actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var guest in ViewModel.Guests)
+                    {
+                        <tr>
+                            <td>@guest.FullName</td>
+                            <td>@guest.Email</td>
+                            <td class="numeric-start">@guest.PhoneNumber</td>
+                            <td>@guest.Country</td>
+                            <td>@PassportText(guest)</td>
+                            <td class="table-actions">
+                                <button type="button"
+                                        class="btn btn-secondary btn-sm"
+                                        disabled="@ViewModel.IsBusy"
+                                        @onclick="() => BeginEditAsync(guest)">
+                                    Edit
+                                </button>
+
+                                <button type="button"
+                                        class="btn btn-danger btn-sm"
+                                        disabled="@ViewModel.IsBusy"
+                                        @onclick="() => RequestDelete(guest)">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>Overskriften i bekræftelsen af en sletning.</summary>
+    private string DeleteTitle => $"Delete {ViewModel.GuestPendingDeletion?.FullName}?";
+
+    /// <summary>Henter den første liste når skærmen åbnes.</summary>
+    protected override Task OnInitializedAsync() => ViewModel.InitializeAsync();
+
+    /// <summary>Siger om der er registreret et pasnummer, uden at vise det.</summary>
+    private static string PassportText(GuestListItemDto guest) =>
+        guest.HasPassportNumber ? "On file" : "—";
+
+    private Task SearchAsync() => ViewModel.SearchAsync();
+
+    private Task ClearSearchAsync() => ViewModel.ClearSearchAsync();
+
+    private void Validate() => ViewModel.Validate();
+
+    private void BeginCreate()
+    {
+        ViewModel.DismissSuccess();
+        ViewModel.BeginCreate();
+    }
+
+    private Task BeginEditAsync(GuestListItemDto guest)
+    {
+        ViewModel.DismissSuccess();
+
+        return ViewModel.BeginEditAsync(guest.GuestId);
+    }
+
+    private void CancelEdit() => ViewModel.CancelEdit();
+
+    private Task SaveAsync() => ViewModel.SaveAsync();
+
+    private void RequestDelete(GuestListItemDto guest)
+    {
+        ViewModel.DismissSuccess();
+        ViewModel.RequestDelete(guest);
+    }
+
+    private void AbortDelete() => ViewModel.AbortDelete();
+
+    private Task ConfirmDeleteAsync() => ViewModel.ConfirmDeleteAsync();
+}

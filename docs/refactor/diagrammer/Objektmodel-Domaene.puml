@@ -1,7 +1,7 @@
 @startuml Objektmodel-Domaene
 ' =====================================================================
-' Floozys Hotel 2.0 — Objektmodel, domænelaget
-' Genereret 2026-09-08 ud fra src/Floozys.Hotel.Domain/
+' NFHotel 2.0 — Objektmodel, domænelaget
+' Genereret 2026-09-08 ud fra src/NFHotel.Domain/
 ' =====================================================================
 skinparam backgroundColor #FFFFFF
 skinparam shadowing false
@@ -32,7 +32,7 @@ skinparam note {
 
 title Objektmodel — domænelaget
 
-package "Floozys.Hotel.Domain" as DOM #FCFBF8 {
+package "NFHotel.Domain" as DOM #FCFBF8 {
 
   class Booking <<entity>> {
     +BookingId

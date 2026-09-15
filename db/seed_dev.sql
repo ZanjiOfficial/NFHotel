@@ -1,8 +1,8 @@
 -- =====================================================================
--- Floozys Hotel — testdata til udvikling
+-- NFHotel — testdata til udvikling
 -- =====================================================================
 -- Kør:
---   docker exec -i floozys-postgres psql -U floozys -d floozys_hotel < db/seed_dev.sql
+--   docker exec -i nfhotel-postgres psql -U nfhotel -d nfhotel < db/seed_dev.sql
 --
 -- Alle datoer er relative til CURRENT_DATE, så check-in og check-ud
 -- altid kan afprøves uanset hvornår scriptet køres.

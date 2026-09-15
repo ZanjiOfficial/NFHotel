@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!--
+    NFHotel.Web er composition root. Den refererer Application (kontrakterne
+    komponenterne kalder) og Infrastructure (kun for AddInfrastructure i Program.cs).
+    Ingen komponent og ingen ViewModel må røre EF Core eller Npgsql (B-10).
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!--
+      Samme bar som NFHotel.Infrastructure: 0 advarsler er et krav, ikke et mål.
+      Uden TreatWarningsAsErrors bliver den første advarsel hurtigt til femten.
+    -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NFHotel.Application\NFHotel.Application.csproj" />
+    <ProjectReference Include="..\NFHotel.Infrastructure\NFHotel.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

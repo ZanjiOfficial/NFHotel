@@ -1,7 +1,7 @@
-# Floozys Hotel — Analyse (Fase 0)
+# NFHotel — Analyse (Fase 0)
 
 > Genereret 2026-09-02 af 5 parallelle read-only analyse-agenter.
-> Kilde: `4. Semester\Floozys-Hotel-main\` (uændret).
+> Kilde: `4. Semester\NFHotel-Hotel-main\` (uændret).
 > Ingen kode er skrevet. Ingen filer i kildeprojektet er ændret.
 
 ---
@@ -16,7 +16,7 @@
 - **Check-in er tilladt direkte fra `Pending`**, hvilket modsiger bekræftelsesdialogens egen tekst ("Payment has been received"). Bekræftet af test T-21. Skal afklares før tilstandsmaskinen låses.
 - **Uge- og månedsvisning filtrerer ikke på periode** — kun årsvisningen gør. Ser utilsigtet ud.
 - **`RoomNumber` er `string` i C# men `INT` i begge create-scripts**; kun et løst patch-script (`03_AlterRoomNumberToString.sql`, som kun findes i det ene af to SQL-sæt) retter det.
-- **Der findes to indbyrdes uforenelige SQL-sæt** (`Database/` og `Floozys Hotel/SQL/`) med samme filnavne og helt forskelligt indhold. Kører man det ene efter det andet, slettes data.
+- **Der findes to indbyrdes uforenelige SQL-sæt** (`Database/` og `NFHotel/SQL/`) med samme filnavne og helt forskelligt indhold. Kører man det ene efter det andet, slettes data.
 - **Ingen DI:** `DatabaseConfig` er en statisk mutérbar global; alle tre repos læser den i konstruktøren. Alt er synkront — nul `async` i hele dataadgangslaget.
 - **RoomRepo bruger stored procedures, BookingRepo og GuestRepo bruger inline-SQL** uden forklaring. `GuestRepo` mapper via hardkodede kolonneindeks 0-6.
 - **Forretningsregler er lækket ned i repo-laget** (fx "rum med bookinger må ikke slettes" som `catch` på SQL-fejl 547) og op i view-laget (statusknapper styret af XAML-triggere).
@@ -32,7 +32,7 @@
 
 #### Booking
 
-Kilder: `Floozys Hotel/Models/Booking.cs`, `Database/01_CreateSchema.sql:43-54`, `Floozys Hotel/SQL/01_CreateSchema.sql:57-68`, `Floozys Hotel/SQL/fix-booking-identity.sql:12-23`
+Kilder: `NFHotel/Models/Booking.cs`, `Database/01_CreateSchema.sql:43-54`, `NFHotel/SQL/01_CreateSchema.sql:57-68`, `NFHotel/SQL/fix-booking-identity.sql:12-23`
 
 | Felt | C#-type | SQL-type | I diagram? | Bemærkning |
 |---|---|---|---|---|
@@ -53,7 +53,7 @@ Indekser på BOOKING (begge 01-scripts): `IX_Booking_StartDate`, `IX_Booking_End
 
 #### Guest
 
-Kilder: `Floozys Hotel/Models/Guest.cs`, `Database/01_CreateSchema.sql:29-37`, `Floozys Hotel/SQL/01_CreateSchema.sql:43-51`
+Kilder: `NFHotel/Models/Guest.cs`, `Database/01_CreateSchema.sql:29-37`, `NFHotel/SQL/01_CreateSchema.sql:43-51`
 
 | Felt | C#-type | SQL-type | I diagram? | Bemærkning |
 |---|---|---|---|---|
@@ -69,7 +69,7 @@ Kolonnerækkefølge i SQL: GuestID, FirstName, LastName, PassportNumber, Email, 
 
 #### Room
 
-Kilder: `Floozys Hotel/Models/Room.cs`, `Database/01_CreateSchema.sql:16-23`, `Floozys Hotel/SQL/01_CreateSchema.sql:30-37`, `Floozys Hotel/SQL/03_AlterRoomNumberToString.sql`
+Kilder: `NFHotel/Models/Room.cs`, `Database/01_CreateSchema.sql:16-23`, `NFHotel/SQL/01_CreateSchema.sql:30-37`, `NFHotel/SQL/03_AlterRoomNumberToString.sql`
 
 | Felt | C#-type | SQL-type | I diagram? | Bemærkning |
 |---|---|---|---|---|
@@ -82,7 +82,7 @@ Kilder: `Floozys Hotel/Models/Room.cs`, `Database/01_CreateSchema.sql:16-23`, `F
 
 ### Enums
 
-#### BookingStatus (`Floozys Hotel/Models/Enums/BookingStatus.cs:6-13`)
+#### BookingStatus (`NFHotel/Models/Enums/BookingStatus.cs:6-13`)
 
 Ingen eksplicitte værdier, så implicit `int`-backing fra 0:
 
@@ -94,9 +94,9 @@ Ingen eksplicitte værdier, så implicit `int`-backing fra 0:
 | CheckedOut | 3 | Guest has checked out |
 | Cancelled | 4 | Booking cancelled |
 
-Lagring: `BOOKING.Status INT NOT NULL DEFAULT 0`, med samme mapping dokumenteret i kommentar i `Database/01_CreateSchema.sql:49`, `Floozys Hotel/SQL/01_CreateSchema.sql:63` og i `Database/README.md:64`. Testdata bruger 0–4 direkte. Der er ingen CHECK-constraint eller lookup-tabel, så en vilkårlig int kan indsættes.
+Lagring: `BOOKING.Status INT NOT NULL DEFAULT 0`, med samme mapping dokumenteret i kommentar i `Database/01_CreateSchema.sql:49`, `NFHotel/SQL/01_CreateSchema.sql:63` og i `Database/README.md:64`. Testdata bruger 0–4 direkte. Der er ingen CHECK-constraint eller lookup-tabel, så en vilkårlig int kan indsættes.
 
-#### RoomStatus (`Floozys Hotel/Models/Enums/RoomStatus.cs:9-14`)
+#### RoomStatus (`NFHotel/Models/Enums/RoomStatus.cs:9-14`)
 
 | Værdi | Tal |
 |---|---|
@@ -104,25 +104,25 @@ Lagring: `BOOKING.Status INT NOT NULL DEFAULT 0`, med samme mapping dokumenteret
 | OutOfService | 1 |
 | Maintenance | 2 |
 
-Lagring: `ROOM.Status INT NOT NULL DEFAULT 0`, mapping i kommentar i begge 01-scripts og i `Database/README.md:63`. `Database/02_InsertTestData.sql:14` bruger værdi 1 for ét rum; `Floozys Hotel/SQL/02_InsertTestData.sql` bruger kun 0. Ingen CHECK-constraint.
+Lagring: `ROOM.Status INT NOT NULL DEFAULT 0`, mapping i kommentar i begge 01-scripts og i `Database/README.md:63`. `Database/02_InsertTestData.sql:14` bruger værdi 1 for ét rum; `NFHotel/SQL/02_InsertTestData.sql` bruger kun 0. Ingen CHECK-constraint.
 
-Bemærk: filerne ligger i `Models/Enums`, men namespace er `Floozys_Hotel.Models` — mappe og namespace følges ikke ad.
+Bemærk: filerne ligger i `Models/Enums`, men namespace er `NFHotel.Models` — mappe og namespace følges ikke ad.
 
 ### SQL-scripts
 
-Sæt A = `Database/` (Azure-sættet), Sæt B = `Floozys Hotel/SQL/` (projekt-/lokalsættet).
+Sæt A = `Database/` (Azure-sættet), Sæt B = `NFHotel/SQL/` (projekt-/lokalsættet).
 
 | # | Fil | Sæt | Formål |
 |---|---|---|---|
 | 1 | `Database/01_CreateSchema.sql` | A | Dropper og opretter ROOM, GUEST, BOOKING med PK/FK samt 5 indekser på BOOKING. Antager at databasen `HotelBooking` allerede findes på Azure. |
 | 2 | `Database/02_InsertTestData.sql` | A | Indsætter fast testdata: 8 rum, 5 gæster, 7 bookinger (december 2024) med statusværdier 0–4. |
 | 3 | `Database/03_InsertExtendedTestData.sql` | A | Udvider datasættet: 15 ekstra gæster (i alt 20) og ~99 bookinger fordelt over dec. 2025 – jan. 2028. Forudsætter at script 1+2 er kørt. |
-| 4 | `Floozys Hotel/SQL/01_CreateSchema.sql` | B | Samme skema som #1, men opretter først databasen `HotelBooking` hvis den ikke findes. Ellers identisk. |
-| 5 | `Floozys Hotel/SQL/02_InsertTestData.sql` | B | Helt andet indhold end #2: rydder alle tre tabeller (DELETE + RESEED), indsætter 10 rum og 100 gæster og genererer via cursor tilfældige bookinger pr. rum 5 år frem. |
-| 6 | `Floozys Hotel/SQL/03_AlterRoomNumberToString.sql` | B | Patch: `ROOM.RoomNumber` fra `INT` til `NVARCHAR(20) NOT NULL`. |
-| 7 | `Floozys Hotel/SQL/fix-booking-identity.sql` | B | Patch (2025-12-13): genskaber BOOKING med `IDENTITY(1,1)`. Sætter Start/EndDate til `DATETIME2`; genskaber ikke indekser eller navngivne FK-constraints. |
-| 8 | `Floozys Hotel/SQL/generate room storedprocedures.sql` | B | Opretter `uspGetAllRooms`, `uspGetRoomById`, `uspGetRoomsFromCriteria`, `uspUpdateRoom`, `uspDeleteRoom`. |
-| 9 | `Floozys Hotel/SQL/uspCreateRoom StoredProcedure.sql` | B | Opretter `uspCreateRoom`. Ligger separat fra de øvrige room-procedures. |
+| 4 | `NFHotel/SQL/01_CreateSchema.sql` | B | Samme skema som #1, men opretter først databasen `HotelBooking` hvis den ikke findes. Ellers identisk. |
+| 5 | `NFHotel/SQL/02_InsertTestData.sql` | B | Helt andet indhold end #2: rydder alle tre tabeller (DELETE + RESEED), indsætter 10 rum og 100 gæster og genererer via cursor tilfældige bookinger pr. rum 5 år frem. |
+| 6 | `NFHotel/SQL/03_AlterRoomNumberToString.sql` | B | Patch: `ROOM.RoomNumber` fra `INT` til `NVARCHAR(20) NOT NULL`. |
+| 7 | `NFHotel/SQL/fix-booking-identity.sql` | B | Patch (2025-12-13): genskaber BOOKING med `IDENTITY(1,1)`. Sætter Start/EndDate til `DATETIME2`; genskaber ikke indekser eller navngivne FK-constraints. |
+| 8 | `NFHotel/SQL/generate room storedprocedures.sql` | B | Opretter `uspGetAllRooms`, `uspGetRoomById`, `uspGetRoomsFromCriteria`, `uspUpdateRoom`, `uspDeleteRoom`. |
+| 9 | `NFHotel/SQL/uspCreateRoom StoredProcedure.sql` | B | Opretter `uspCreateRoom`. Ligger separat fra de øvrige room-procedures. |
 
 Overordnet: A er Azure-orienteret, tre trin, ingen stored procedures, ingen patches. B er lokal-orienteret, ét (helt andet) datascript, begge patch-scripts og alle stored procedures. Kun ROOM har stored procedures — GUEST og BOOKING har ingen.
 
@@ -176,25 +176,25 @@ Overordnet: A er Azure-orienteret, tre trin, ingen stored procedures, ingen patc
 
 | Regel | Metode/attribut | Fil:linje |
 |---|---|---|
-| `FirstName` må ikke være null/tom/whitespace | `Guest.Validate()` | `Floozys Hotel/Models/Guest.cs:49-50` |
-| `LastName` må ikke være null/tom/whitespace | `Guest.Validate()` | `Floozys Hotel/Models/Guest.cs:51-52` |
-| `Email` skal være udfyldt og indeholde både `@` og `.` | `Guest.Validate()` | `Floozys Hotel/Models/Guest.cs:53-54` |
-| `PhoneNumber` må ikke være tom (intet formatkrav) | `Guest.Validate()` | `Floozys Hotel/Models/Guest.cs:55-56` |
-| `Country` må ikke være tom | `Guest.Validate()` | `Floozys Hotel/Models/Guest.cs:57-58` |
-| `RoomNumber` må ikke være tom/whitespace | `Room.Validate()` | `Floozys Hotel/Models/Room.cs:40-41` |
-| `Floor` skal være > 0 | `Room.Validate()` | `Floozys Hotel/Models/Room.cs:43-44` |
-| `RoomSize` må ikke være tom (ingen whitelist) | `Room.Validate()` | `Floozys Hotel/Models/Room.cs:46-47` |
-| `Capacity` skal være > 0 | `Room.Validate()` | `Floozys Hotel/Models/Room.cs:49-50` |
-| `StartDate` må ikke være `default(DateTime)` | `Booking.Validate()` | `Floozys Hotel/Models/Booking.cs:47-48` |
-| `EndDate` må ikke være `default(DateTime)` | `Booking.Validate()` | `Floozys Hotel/Models/Booking.cs:50-51` |
-| `EndDate` skal være strengt > `StartDate` | `Booking.Validate()` | `Floozys Hotel/Models/Booking.cs:53-54` |
-| `StartDate.Date` må ikke være før i dag | `Booking.Validate()` | `Floozys Hotel/Models/Booking.cs:56-57` |
-| Fejl kun hvis `Room` er null OG `RoomID` er 0 | `Booking.Validate()` | `Floozys Hotel/Models/Booking.cs:59-60` |
-| Fejl kun hvis `Guest` er null OG `GuestID` er 0 | `Booking.Validate()` | `Floozys Hotel/Models/Booking.cs:62-63` |
-| `CheckOutTime` skal være strengt > `CheckInTime` når begge er sat | `Booking.Validate()` | `Floozys Hotel/Models/Booking.cs:65-66` |
-| `newEndDate > newStartDate` på indsendte datoer | `Booking.ValidateEdit()` | `Floozys Hotel/Models/Booking.cs:75-76` |
-| `newStartDate.Date` må ikke være før i dag | `Booking.ValidateEdit()` | `Floozys Hotel/Models/Booking.cs:78-79` |
-| Dekoreret DateTime skal være strengt > den property konstruktøren nævner | `DateGreaterThanAttribute.IsValid()` | `Floozys Hotel/Validation/DateGreaterThanAttribute.cs:20-47` |
+| `FirstName` må ikke være null/tom/whitespace | `Guest.Validate()` | `NFHotel/Models/Guest.cs:49-50` |
+| `LastName` må ikke være null/tom/whitespace | `Guest.Validate()` | `NFHotel/Models/Guest.cs:51-52` |
+| `Email` skal være udfyldt og indeholde både `@` og `.` | `Guest.Validate()` | `NFHotel/Models/Guest.cs:53-54` |
+| `PhoneNumber` må ikke være tom (intet formatkrav) | `Guest.Validate()` | `NFHotel/Models/Guest.cs:55-56` |
+| `Country` må ikke være tom | `Guest.Validate()` | `NFHotel/Models/Guest.cs:57-58` |
+| `RoomNumber` må ikke være tom/whitespace | `Room.Validate()` | `NFHotel/Models/Room.cs:40-41` |
+| `Floor` skal være > 0 | `Room.Validate()` | `NFHotel/Models/Room.cs:43-44` |
+| `RoomSize` må ikke være tom (ingen whitelist) | `Room.Validate()` | `NFHotel/Models/Room.cs:46-47` |
+| `Capacity` skal være > 0 | `Room.Validate()` | `NFHotel/Models/Room.cs:49-50` |
+| `StartDate` må ikke være `default(DateTime)` | `Booking.Validate()` | `NFHotel/Models/Booking.cs:47-48` |
+| `EndDate` må ikke være `default(DateTime)` | `Booking.Validate()` | `NFHotel/Models/Booking.cs:50-51` |
+| `EndDate` skal være strengt > `StartDate` | `Booking.Validate()` | `NFHotel/Models/Booking.cs:53-54` |
+| `StartDate.Date` må ikke være før i dag | `Booking.Validate()` | `NFHotel/Models/Booking.cs:56-57` |
+| Fejl kun hvis `Room` er null OG `RoomID` er 0 | `Booking.Validate()` | `NFHotel/Models/Booking.cs:59-60` |
+| Fejl kun hvis `Guest` er null OG `GuestID` er 0 | `Booking.Validate()` | `NFHotel/Models/Booking.cs:62-63` |
+| `CheckOutTime` skal være strengt > `CheckInTime` når begge er sat | `Booking.Validate()` | `NFHotel/Models/Booking.cs:65-66` |
+| `newEndDate > newStartDate` på indsendte datoer | `Booking.ValidateEdit()` | `NFHotel/Models/Booking.cs:75-76` |
+| `newStartDate.Date` må ikke være før i dag | `Booking.ValidateEdit()` | `NFHotel/Models/Booking.cs:78-79` |
+| Dekoreret DateTime skal være strengt > den property konstruktøren nævner | `DateGreaterThanAttribute.IsValid()` | `NFHotel/Validation/DateGreaterThanAttribute.cs:20-47` |
 
 Bemærkninger:
 - `DateGreaterThanAttribute` bruges ikke på nogen af de tre modeller — ingen DataAnnotations-attributter overhovedet.
@@ -204,12 +204,12 @@ Bemærkninger:
 
 ### Uklart/modstridende (models)
 
-1. Hvilket SQL-sæt er kanonisk? `Database/README.md` nævner ikke `Floozys Hotel/SQL/` med ét ord.
+1. Hvilket SQL-sæt er kanonisk? `Database/README.md` nævner ikke `NFHotel/SQL/` med ét ord.
 2. Den faktiske kolonnetype for `RoomNumber` og `StartDate`/`EndDate` kan ikke afgøres fra filerne alene.
 3. Kørerækkefølge for `03_InsertExtendedTestData.sql` er udokumenteret.
 4. Er `fix-booking-identity.sql` kørt eller ej? Hvorfor problemet opstod fremgår ikke.
 5. `RoomSize` er de facto en enum i data, men findes hverken som C#-enum, lookup-tabel eller CHECK-constraint.
-6. `Room.cs:8` importerer `Floozys_Hotel.Core` uden at bruge noget derfra.
+6. `Room.cs:8` importerer `NFHotel.Core` uden at bruge noget derfra.
 7. `DCD_Architecture.md` tegner kun `RoomRepo` og `GuestRepo` mod `DatabaseConfig`, ikke `BookingRepo`.
 8. `RoomRepo.GetAllByAvailability()` optræder i diagrammet, men ikke på `IRoomRepo`.
 9. ERD_DB angiver hverken typer, nullability eller kardinaliteter.
@@ -257,8 +257,8 @@ Bemærkninger:
 
 ### Connection string og DatabaseConfig
 
-- `DatabaseConfig` er en `static class` med `public static string ConnectionString { get; set; }` (`Floozys Hotel/Database/DatabaseConfig.cs:13-17`) — global mutable state uden `readonly`, uden validering, uden initialisering.
-- Værdien sættes ét sted: `App.OnStartup` bygger en `ConfigurationBuilder` (basepath = `AppDomain.CurrentDomain.BaseDirectory`), læser `appsettings.json` (`optional: false`) og tildeler `GetConnectionString("DefaultConnection")` (`Floozys Hotel/App.xaml.cs:18-23`).
+- `DatabaseConfig` er en `static class` med `public static string ConnectionString { get; set; }` (`NFHotel/Database/DatabaseConfig.cs:13-17`) — global mutable state uden `readonly`, uden validering, uden initialisering.
+- Værdien sættes ét sted: `App.OnStartup` bygger en `ConfigurationBuilder` (basepath = `AppDomain.CurrentDomain.BaseDirectory`), læser `appsettings.json` (`optional: false`) og tildeler `GetConnectionString("DefaultConnection")` (`NFHotel/App.xaml.cs:18-23`).
 - Ingen hardcodede credentials i de læste filer; selve strengen ligger i `appsettings.json`, som ikke var i læseområdet.
 - Hver repo læser den statiske property **én gang i konstruktøren** og gemmer i `readonly string _connectionString`: `BookingRepo.cs:14-17`, `GuestRepo.cs:13-16`, `RoomRepo.cs:12-15`. En repo instantieret før `OnStartup` holder permanent null; `reloadOnChange: true` har ingen effekt.
 - `TestConnection()`/`TestConnectionWithDetails()` kaldes ikke fra repos eller `App.xaml.cs`.
@@ -317,7 +317,7 @@ Den fulde BR-tabel (BR-01 til BR-90) og tilstandsdiagrammet er flyttet til `Busi
 
 ### Metodedækning
 
-**BookingOverviewViewModel** (`Floozys Hotel/ViewModels/BookingOverviewViewModel.cs`)
+**BookingOverviewViewModel** (`NFHotel/ViewModels/BookingOverviewViewModel.cs`)
 - `BookingOverviewViewModel()` (parameterløs ctor) — ingen regler
 - `BookingOverviewViewModel(IBookingRepo, IRoomRepo)` — BR-02, BR-06, BR-09, BR-11, BR-14, BR-16, BR-26, BR-28
 - `LoadData()` — BR-34, BR-23, BR-31
@@ -404,7 +404,7 @@ Den fulde BR-tabel (BR-01 til BR-90) og tilstandsdiagrammet er flyttet til `Busi
 
 ## 4. analyse:views
 
-### 4.1 MainWindow (`Floozys Hotel/MainWindow.xaml`)
+### 4.1 MainWindow (`NFHotel/MainWindow.xaml`)
 
 Applikationens skal: fast venstre sidemenu med logo + 5 navigationsknapper, og et `ContentControl` der viser det aktive view. `DataContext` sættes deklarativt til `MainViewModel` (`:15-17`); code-behind indeholder kun `InitializeComponent()`.
 
@@ -587,20 +587,20 @@ Begge er rene placeholder-skærme med udelukkende en overskrift-TextBlock. Ingen
 
 | Testfil | Antal tests | Tester | Kræver DB? | Genbrugsværdi + begrundelse |
 |---|---|---|---|---|
-| `Floozys_Hotel_Tests/Models/BookingTests.cs` | 16 | Model (`Booking`) | Nej i testen — men ja i praksis (se DB-afsnit) | **Høj.** Rene, hurtige tests af `Validate()`, `ValidateEdit()`, `NumberOfNights`, `BookingNumber`. Kan bruges 1:1 som facit. |
-| `Floozys_Hotel_Tests/Models/GuestTests.cs` | 13 | Model (`Guest`) | Nej i testen — men ja i praksis | **Høj.** Låser hele valideringskontrakten inkl. de præcise fejltekster. 2 af 13 er konstruktør-boilerplate. |
-| `Floozys_Hotel_Tests/Models/RoomTests.cs` | 17 | Model (`Room`) | Nej i testen — men ja i praksis | **Mellem.** Kerne-valideringen (5-6 tests) er værdifuld; ca. halvdelen er trivielle kopier. |
-| `Floozys_Hotel_Tests/Repositories/BookingRepoTests.cs` | 12 | Repo | **Ja — live SQL Server** | **Mellem.** Fejlkontrakten og navigation-property-loading er ægte regler, men uadskilleligt bundet til en fysisk DB. |
-| `Floozys_Hotel_Tests/Repositories/GuestRepoTests.cs` | 13 | Repo | **Ja — live SQL Server** | **Lav.** Næsten udelukkende CRUD-roundtrip. Kun `GetAllByName` og nullable-pas udtrykker reel adfærd. Ingen cleanup-hook. |
-| `Floozys_Hotel_Tests/Repositories/RoomRepoTests.cs` | 15 | Repo | **Ja — live SQL Server** | **Mellem.** `GetAllByAvailability` og de fire `GetRoomsFromCriteria`-tests beskriver et rigtigt filter-API. Resten er CRUD. |
-| `Floozys_Hotel_Tests/ViewModels/BookingOverviewViewModelTests.cs` | 22 | ViewModel | **Nej — eneste fil med ægte mocks** (Moq mod `IBookingRepo`/`IRoomRepo`) | **Høj.** Den mest værdifulde fil: 20 af 22 tests koder bookingens tilstandsmaskine. Eksekverbar use-case-specifikation. |
-| `Floozys_Hotel_Tests/ViewModels/NewBookingViewModelTests.cs` | 20 | ViewModel | **Sandsynligvis ja, indirekte** — VM konstrueres parameterløst uden mocks (`:23`) | **Lav.** 14-16 af 20 er property-boilerplate. Kun `CheckOutDate_BeforeCheckIn_SetsErrorMessage` (`:264`) tester logik. |
+| `NFHotel_Tests/Models/BookingTests.cs` | 16 | Model (`Booking`) | Nej i testen — men ja i praksis (se DB-afsnit) | **Høj.** Rene, hurtige tests af `Validate()`, `ValidateEdit()`, `NumberOfNights`, `BookingNumber`. Kan bruges 1:1 som facit. |
+| `NFHotel_Tests/Models/GuestTests.cs` | 13 | Model (`Guest`) | Nej i testen — men ja i praksis | **Høj.** Låser hele valideringskontrakten inkl. de præcise fejltekster. 2 af 13 er konstruktør-boilerplate. |
+| `NFHotel_Tests/Models/RoomTests.cs` | 17 | Model (`Room`) | Nej i testen — men ja i praksis | **Mellem.** Kerne-valideringen (5-6 tests) er værdifuld; ca. halvdelen er trivielle kopier. |
+| `NFHotel_Tests/Repositories/BookingRepoTests.cs` | 12 | Repo | **Ja — live SQL Server** | **Mellem.** Fejlkontrakten og navigation-property-loading er ægte regler, men uadskilleligt bundet til en fysisk DB. |
+| `NFHotel_Tests/Repositories/GuestRepoTests.cs` | 13 | Repo | **Ja — live SQL Server** | **Lav.** Næsten udelukkende CRUD-roundtrip. Kun `GetAllByName` og nullable-pas udtrykker reel adfærd. Ingen cleanup-hook. |
+| `NFHotel_Tests/Repositories/RoomRepoTests.cs` | 15 | Repo | **Ja — live SQL Server** | **Mellem.** `GetAllByAvailability` og de fire `GetRoomsFromCriteria`-tests beskriver et rigtigt filter-API. Resten er CRUD. |
+| `NFHotel_Tests/ViewModels/BookingOverviewViewModelTests.cs` | 22 | ViewModel | **Nej — eneste fil med ægte mocks** (Moq mod `IBookingRepo`/`IRoomRepo`) | **Høj.** Den mest værdifulde fil: 20 af 22 tests koder bookingens tilstandsmaskine. Eksekverbar use-case-specifikation. |
+| `NFHotel_Tests/ViewModels/NewBookingViewModelTests.cs` | 20 | ViewModel | **Sandsynligvis ja, indirekte** — VM konstrueres parameterløst uden mocks (`:23`) | **Lav.** 14-16 af 20 er property-boilerplate. Kun `CheckOutDate_BeforeCheckIn_SetsErrorMessage` (`:264`) tester logik. |
 
 **I alt 128 `[TestMethod]`** (README påstår 129).
 
 `MSTestSettings.cs` (31 linjer): `[AssemblyInitialize]` bygger `ConfigurationBuilder` fra `appsettings.json` og sætter den statiske `DatabaseConfig.ConnectionString`. Sætter `[assembly: Parallelize(Scope = ExecutionScope.MethodLevel)]` (`:7`).
 
-`Floozys_Hotel_Tests.csproj` (29 linjer): `net8.0-windows`, `Nullable enable`, `ImplicitUsings enable`. Pakker: `Moq 4.20.72`, `MSTest 4.0.1`. Projektreference til WPF-projektet. `<None Update="appsettings.json">` med `PreserveNewest`.
+`NFHotel_Tests.csproj` (29 linjer): `net8.0-windows`, `Nullable enable`, `ImplicitUsings enable`. Pakker: `Moq 4.20.72`, `MSTest 4.0.1`. Projektreference til WPF-projektet. `<None Update="appsettings.json">` med `PreserveNewest`.
 
 ### DB-afhængighed
 

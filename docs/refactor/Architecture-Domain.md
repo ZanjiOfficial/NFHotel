@@ -2,7 +2,7 @@
 
 > Fuldt output fra agenten `design:domain` (Fase 1). **Bilag.** `Architecture.md` har forrang hvor de modsiger hinanden — se især afgørelserne A-01 til A-15.
 
-# Domænedesign — `Floozys.Hotel.Domain`
+# Domænedesign — `NFHotel.Domain`
 
 > Fase 1, `design:domain`. Read-only designdokument. Ingen kode skrevet.
 > Input: `BusinessRules.md` (126 regler), `Analysis.md` §1, `Conventions.md`, `Decisions.md`, `Fase1-Scope.md`.
@@ -15,7 +15,7 @@
 Feature-først, ikke type-først (Conventions.md: *"Organisér efter feature først"*, *"Hold namespaces identiske med mappestruktur"*, *"1 public class pr. fil"*).
 
 ```
-Floozys.Hotel.Domain/
+NFHotel.Domain/
 ├── Common/
 │   ├── DateRange.cs                 // value object
 │   ├── DomainException.cs           // base
@@ -35,7 +35,7 @@ Floozys.Hotel.Domain/
     └── RoomRules.cs
 ```
 
-Namespaces: `Floozys.Hotel.Domain.Bookings` osv. Ingen `using` mod andre projekter — ingen NuGet-pakker overhovedet. `<Nullable>enable</Nullable>`, `<ImplicitUsings>enable</ImplicitUsings>`, `<TreatWarningsAsErrors>` anbefales for netop dette projekt.
+Namespaces: `NFHotel.Domain.Bookings` osv. Ingen `using` mod andre projekter — ingen NuGet-pakker overhovedet. `<Nullable>enable</Nullable>`, `<ImplicitUsings>enable</ImplicitUsings>`, `<TreatWarningsAsErrors>` anbefales for netop dette projekt.
 
 **Håndhævelse af "ingen afhængigheder":** ingen `DateTime.Now`/`DateTimeOffset.UtcNow` nogen steder i Domain. Alle regler der har brug for "i dag" får det som parameter. Det er den eneste måde tilstandsmaskinen kan unit-testes deterministisk, og det er en direkte konsekvens af Conventions.md's krav om at Domain ikke må kende til framework/omverden.
 
@@ -46,7 +46,7 @@ Namespaces: `Floozys.Hotel.Domain.Bookings` osv. Ingen `using` mod andre projekt
 ### 1.1 `BookingStatus` — uændret (B-06)
 
 ```csharp
-namespace Floozys.Hotel.Domain.Bookings;
+namespace NFHotel.Domain.Bookings;
 
 /// <summary>
 /// Bookingens livscyklus. Ordinalværdierne 0-4 er bevaret fra det gamle system,
@@ -77,7 +77,7 @@ public enum BookingStatus
 Ordinalværdierne 0-2 bevares fra `Models/Enums/RoomStatus.cs`. Kun **betydningen** indsnævres: enum'en svarer nu udelukkende på spørgsmålet *"må rummet udlejes?"*. Det koster nul datamigrering, og det er hele pointen i F-01 at undgå netop den.
 
 ```csharp
-namespace Floozys.Hotel.Domain.Rooms;
+namespace NFHotel.Domain.Rooms;
 
 /// <summary>
 /// Rummets bookbarhed — udelukkende det der forhindrer udlejning.
@@ -104,7 +104,7 @@ public enum RoomStatus
 Ny enum. Ingen eksisterende data at tage hensyn til, så nummereringen er fri; jeg starter på 0 = `Clean`, så `default(HousekeepingStatus)` og databasens `DEFAULT 0` betyder det samme som `RoomStatus.Available`: "intet i vejen".
 
 ```csharp
-namespace Floozys.Hotel.Domain.Rooms;
+namespace NFHotel.Domain.Rooms;
 
 /// <summary>
 /// Rummets rengørings- og servicestand. Opdateres af rengøringspersonale og
@@ -143,7 +143,7 @@ public enum HousekeepingStatus
 `RoomSize` er de facto en enum i data (`'Single'/'Double'/'Suite'`) men lever som fri tekst i både C# og SQL (Analysis §1, uklart pkt. 5). Fase1-Scope listerdet eksplicit som billig insurance: *"Lad `RoomSize` blive en enum eller lookup, ikke en fri streng."* Samme arbejde nu, migrering senere.
 
 ```csharp
-namespace Floozys.Hotel.Domain.Rooms;
+namespace NFHotel.Domain.Rooms;
 
 /// <summary>
 /// Værelsestype. Erstatter det gamle fritekst-felt <c>Room.RoomSize</c>.
@@ -169,7 +169,7 @@ public enum RoomSize
 **Men den persisteres ikke som owned type.** `Booking` beholder `StartDate` og `EndDate` som to `DateOnly`-kolonner præcis som i dag, og eksponerer `Period` som afledt værdi. Det giver reglerne ét hjem uden at pålægge EF-agenten en owned-type-mapping, og uden at ændre kolonnenavne. Value object'et er et *regelsted og en parametertype*, ikke en lagringsstruktur.
 
 ```csharp
-namespace Floozys.Hotel.Domain.Common;
+namespace NFHotel.Domain.Common;
 
 /// <summary>
 /// En bookingperiode: ankomstdato (inklusiv) til afrejsedato (eksklusiv).
@@ -232,7 +232,7 @@ Alle tre følger samme mønster: private setters, privat parameterløs konstrukt
 ### 3.1 `Booking`
 
 ```csharp
-namespace Floozys.Hotel.Domain.Bookings;
+namespace NFHotel.Domain.Bookings;
 
 /// <summary>
 /// En reservation af ét rum til én gæst i én periode.
@@ -340,7 +340,7 @@ De fem `Can*`-medlemmer er den konsolidering BusinessRules.md efterlyser: BR-02/
 ### 3.2 `Room`
 
 ```csharp
-namespace Floozys.Hotel.Domain.Rooms;
+namespace NFHotel.Domain.Rooms;
 
 /// <summary>
 /// Et fysisk værelse. Bærer to uafhængige tilstande: bookbarhed
@@ -402,7 +402,7 @@ Bemærk at `Create`/`UpdateDetails` kaster i stedet for at returnere en fejllist
 ### 3.3 `Guest`
 
 ```csharp
-namespace Floozys.Hotel.Domain.Guests;
+namespace NFHotel.Domain.Guests;
 
 /// <summary>
 /// En gæst. Ren domæneentitet — bevidst IKKE en login-/kontoentitet
@@ -475,7 +475,7 @@ public sealed class Guest
 ## 4. Regelklasser (rene funktioner)
 
 ```csharp
-namespace Floozys.Hotel.Domain.Bookings;
+namespace NFHotel.Domain.Bookings;
 
 /// <summary>
 /// Statsløse bookingregler. Rene funktioner uden database- eller tidsafhængighed,
@@ -510,7 +510,7 @@ public static class BookingRules
 `Conflicts` er den ene funktion Application-servicen skal kalde pr. kandidat-booking. Servicen henter bookingerne, Domain afgør om de er i vejen. Dermed findes overlapsdefinitionen præcis ét sted i hele kodebasen — mod to indbyrdes uenige steder i det gamle system.
 
 ```csharp
-namespace Floozys.Hotel.Domain.Guests;
+namespace NFHotel.Domain.Guests;
 
 /// <summary>
 /// Gæstevalidering. <see cref="Guest.Create"/> fejler hurtigt på første brud;
@@ -959,8 +959,8 @@ Videregives uden at jeg designer det:
 
 ### Critical Files for Implementation
 
-- `/mnt/user-data/uploads/Development/New folder/Floozys.Hotel/docs/BusinessRules.md`
-- `/mnt/user-data/uploads/Development/New folder/Floozys.Hotel/docs/Analysis.md`
-- `/mnt/user-data/uploads/Development/New folder/Floozys.Hotel/docs/Decisions.md`
-- `/mnt/user-data/uploads/Development/New folder/Floozys.Hotel/docs/Fase1-Scope.md`
+- `/mnt/user-data/uploads/Development/New folder/NFHotel/docs/BusinessRules.md`
+- `/mnt/user-data/uploads/Development/New folder/NFHotel/docs/Analysis.md`
+- `/mnt/user-data/uploads/Development/New folder/NFHotel/docs/Decisions.md`
+- `/mnt/user-data/uploads/Development/New folder/NFHotel/docs/Fase1-Scope.md`
 - `/mnt/user-data/uploads/Development/Conventions.md`

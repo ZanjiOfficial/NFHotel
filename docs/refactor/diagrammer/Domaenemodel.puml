@@ -1,7 +1,7 @@
 @startuml Domaenemodel
 ' =====================================================================
-' Floozys Hotel 2.0 — Domænemodel
-' Genereret 2026-09-08 ud fra src/Floozys.Hotel.Domain/
+' NFHotel 2.0 — Domænemodel
+' Genereret 2026-09-08 ud fra src/NFHotel.Domain/
 '
 ' Forretningens begreber. Ingen teknik: ingen repositories, ingen DTO'er,
 ' ingen metoder der kun findes af hensyn til implementeringen.
@@ -36,7 +36,7 @@ skinparam note {
 hide methods
 hide circle
 
-title Floozys Hotel 2.0 — Domænemodel
+title NFHotel 2.0 — Domænemodel
 
 ' ---------------------------------------------------------------------
 ' Begreber

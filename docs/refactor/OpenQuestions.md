@@ -21,7 +21,7 @@ Der findes i dag **intet** overlapstjek i `CreateBooking()` eller i `BookingRepo
 Der findes ingen pris nogen steder i domænet. `Room.RoomSize` er fri tekst ('Single'/'Double'/'Suite' i data) uden enum, lookup-tabel eller CHECK-constraint. Konsekvenser: BR-31 (omsætning) kan ikke implementeres, og "Sales overview" kan ikke bygges meningsfuldt. Dette er spørgsmål 1 og 3 i planens afsnit 7.
 
 **Q-05 — Hvilket af de to gamle skemaer er referencen? [nedgraderet 2026-09-02]**
-Der findes to indbyrdes uforenelige SQL-sæt (`Database/` og `Floozys Hotel/SQL/`) med samme filnavne og forskelligt indhold (U-15, U-16), og den faktiske kolonnetype for `ROOM.RoomNumber` og `BOOKING.StartDate/EndDate` afhænger af hvilke patch-scripts der er kørt (U-01, U-05).
+Der findes to indbyrdes uforenelige SQL-sæt (`Database/` og `NFHotel/SQL/`) med samme filnavne og forskelligt indhold (U-15, U-16), og den faktiske kolonnetype for `ROOM.RoomNumber` og `BOOKING.StartDate/EndDate` afhænger af hvilke patch-scripts der er kørt (U-01, U-05).
 **Efter PostgreSQL-beslutningen er dette ikke længere blokerende:** første migration skrives forfra mod PostgreSQL, så de gamle scripts er reference og ikke kilde. Tilbage står kun det semantiske spørgsmål: er `RoomNumber` en streng (svar: ja, det er C#-modellen og patch-scriptet enige om) og har datoerne brug for klokkeslæt (`date` vs. `timestamptz`)? Det sidste hænger sammen med Q-22 og BR-118 (halvdags-reglen i kalenderen).
 
 **Q-05b — Skal datoer være `date` eller `timestamptz`?**
@@ -90,10 +90,10 @@ Bemærk at der i dag ikke findes en eneste adgangsregel knyttet til en bruger �
 
 ## Noteret, ikke blokerende
 
-- Dokumentationen i `Floozys Hotel/Documentation/Diagrams/` er delvist forkert: ERD mangler `Status` på både ROOM og BOOKING (U-08) og er syntaktisk ufuldstændig (U-09); sekvensdiagrammet bruger en `Booking`-konstruktør der ikke findes (U-13) og en samlet INSERT der ikke findes (U-14). Planens afsnit 9 siger allerede: lav ikke nye as-is-diagrammer — lav to-be og sammenlign.
+- Dokumentationen i `NFHotel/Documentation/Diagrams/` er delvist forkert: ERD mangler `Status` på både ROOM og BOOKING (U-08) og er syntaktisk ufuldstændig (U-09); sekvensdiagrammet bruger en `Booking`-konstruktør der ikke findes (U-13) og en samlet INSERT der ikke findes (U-14). Planens afsnit 9 siger allerede: lav ikke nye as-is-diagrammer — lav to-be og sammenlign.
 - `DateGreaterThanAttribute` bruges **ingen steder** — hverken på modeller eller i ViewModels. Kan formentlig droppes i ny kode (dens regel er BR-88, dækket af BR-103/BR-108).
 - `RoomRepo` bruger stored procedures mens `BookingRepo`/`GuestRepo` bruger inline-SQL, uden forklaring. Filterlogikken i `uspGetRoomsFromCriteria` er dermed ikke verificerbar fra C#-koden — den skal læses fra SQL-scriptet før `GetRoomsFromCriteria` genimplementeres i EF.
 - `GuestRepo.GetByID`/`GetAll` mapper via hardkodede kolonneindeks 0-6 (`GuestRepo.cs:66-72`) — brækker lydløst hvis SELECT-rækkefølgen ændres.
 - To positive tests ser ud til at være **slettet** fra testsuiten: der findes ingen test der beviser at man kan slette en booking eller opdatere et værelse med succes (`BookingRepoTests.cs:325-330`, `RoomRepoTests.cs:333-339`). Hullet må ikke forveksles med "reglen findes ikke".
-- `Floozys_Hotel_Tests/README.md` kan ikke bruges som autoritativ kilde: forkert testtal, forkerte pakkeversioner, henviser til fire dokumenter der ikke findes, og er delvist en indsat chatsamtale.
+- `NFHotel_Tests/README.md` kan ikke bruges som autoritativ kilde: forkert testtal, forkerte pakkeversioner, henviser til fire dokumenter der ikke findes, og er delvist en indsat chatsamtale.
 - `Microsoft.Extensions.Configuration*` er ikke refereret i testprojektets `.csproj` — det bygger kun via transitiv afhængighed gennem projektreferencen til WPF-projektet.
