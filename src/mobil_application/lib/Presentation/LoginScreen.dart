@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import '../Authentication/auth_session.dart';
 import 'package:flutter_login/flutter_login.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -7,31 +11,51 @@ import 'RoomList.dart';
 
 //Fandt flutter_login https://pub.dev/packages/flutter_login#-installing-tab-
 //
+// Android emulator -> host machine is 10.0.2.2; iOS sim / desktop / web -> localhost/127.0.0.1
+const _apiBase = 'http://localhost:5142'; //port 5142 is the default port for the LoginApi project
 
 final users = {'user@example.com': '12345', 'user2@example.com': '54321'};
 
+
+//login logic
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
   Duration get loginTime => const Duration(milliseconds: 300);
 
-  Future<String?> _authUser(LoginData data) {
-    return Future.delayed(loginTime).then((_) {
-      if (!users.containsKey(data.name)) {
-        return 'User not found';
+  Future<String?> _authUser(LoginData data) async {
+    try {
+      final res = await http.post(
+        Uri.parse('$_apiBase/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': data.name, 'password': data.password}),
+      );
+      if (res.statusCode == 200) {
+        AuthSession.token = jsonDecode(res.body)['accessToken'] as String;
+        return null; // Login successful
       }
-      if (users[data.name] != data.password) {
-        return 'Invalid password';
+      if (res.statusCode == 401) {
+        return 'Invalid username or password'; // Unauthorized
       }
-      return null;
-    });
+      return 'An error occurred'; // Other error
+    } catch (e) {
+      return 'Could not reach server';
+    }
   }
 
-  Future<String?> _signupUser(SignupData data) {
-    debugPrint('Signup data: $data');
-    return Future.delayed(loginTime).then((_) {
-      return null;
-    });
+  Future<String?> _signupUser(SignupData data) async {
+    try {
+      final res = await http.post(
+        Uri.parse('$_apiBase/auth/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': data.name, 'password': data.password}),
+      );
+      if (res.statusCode == 200) return null; // Signup successful
+      if (res.statusCode == 409) return 'Email already registered';
+      return 'An error occurred';
+    } catch (e) {
+      return 'Could not reach server';
+    }
   }
 
   Future<String?> _recoverPassword(String name) {
