@@ -22,8 +22,8 @@ app.MapPost("/auth/register", async (RegisterRequest req, NpgsqlDataSource db) =
     try
     {
         await conn.ExecuteAsync(
-            "INSERT INTO users (id, email, password_hash) VALUES (@Id, @Email, @Hash)",
-            new { Id = Guid.NewGuid(), req.Email, Hash = hash });
+            "INSERT INTO auth.users (email, password_hash) VALUES (@Email, @Hash)",
+            new { req.Email, Hash = hash });
     }
     catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.UniqueViolation)
     {
@@ -36,7 +36,7 @@ app.MapPost("/auth/login", async (LoginRequest req, NpgsqlDataSource db, IConfig
 {
     await using var conn = await db.OpenConnectionAsync();
     var user = await conn.QuerySingleOrDefaultAsync<UserRow>(
-        "SELECT id AS Id, password_hash AS PasswordHash FROM users WHERE email = @Email",
+        "SELECT id AS Id, password_hash AS PasswordHash FROM auth.users WHERE email = @Email",
         new { req.Email });
 
     if (user is null || !BCrypt.Net.BCrypt.Verify(req.Password, user.PasswordHash))
@@ -57,4 +57,4 @@ app.Run();
 
 record LoginRequest(string Email, string Password);
 record RegisterRequest(string Email, string Password);
-record UserRow(Guid Id, string PasswordHash);
+record UserRow(long Id, string PasswordHash);
