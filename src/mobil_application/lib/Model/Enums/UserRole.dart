@@ -3,7 +3,7 @@ import 'resources.dart';
 enum UserRole {
   admin,
   cleaner,
-  service,
+  technician,
 }
 
 extension UserRoleX on UserRole {
@@ -12,8 +12,8 @@ extension UserRoleX on UserRole {
       case UserRole.admin:
         return true;
       case UserRole.cleaner:
-        return false; 
-      case UserRole.service:
+        return false;
+      case UserRole.technician:
         return false;
     }
   }

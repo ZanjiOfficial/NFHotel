@@ -14,42 +14,42 @@ class RoomTile extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     return Material(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(color: AppColors.border),
           ),
-          child: Stack(
+          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 8),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (icon != null)
-                Positioned.fill(
-                  child: Opacity(
-                    opacity: 0.15,
-                    child: Image.asset(icon, fit: BoxFit.cover),
-                  ),
-                ),
-              Container(
-                padding: const EdgeInsets.all(8),
-                alignment: Alignment.center,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Room ${room.number}',
-                      style: textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      room.status.label,
-                      textAlign: TextAlign.center,
-                      style: textTheme.bodyMedium?.copyWith(fontSize: 12),
-                    ),
-                  ],
-                ),
+              SizedBox(
+                width: 64,
+                height: 64,
+                child: icon != null
+                    ? Image.asset(icon, fit: BoxFit.contain)
+                    : Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF16A34A),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Icon(Icons.check_rounded, color: Colors.white, size: 32),
+                      ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Room ${room.number}',
+                style: textTheme.titleMedium,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                room.status.label,
+                textAlign: TextAlign.center,
+                style: textTheme.bodyMedium?.copyWith(fontSize: 12, fontWeight: FontWeight.w600),
               ),
             ],
           ),

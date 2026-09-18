@@ -17,10 +17,11 @@ builder.Services.AddCors(options => options.AddPolicy("AllowAll", p => p.AllowAn
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        options.MapInboundClaims = false;
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidateIssuer = false,
+            ValidateAudience = false,
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
         };
@@ -74,8 +75,77 @@ app.MapPost("/auth/login", async (LoginRequest req, NpgsqlDataSource db, IConfig
     return Results.Ok(new { accessToken = new JwtSecurityTokenHandler().WriteToken(token) });
 });
 
+var admin = app.MapGroup("/admin/users").RequireAuthorization(p => p.RequireRole("admin"));
+
+admin.MapGet("/", async (HttpContext http, NpgsqlDataSource db) =>
+{
+    var currentId = long.Parse(http.User.FindFirstValue(JwtRegisteredClaimNames.Sub)!);
+    await using var conn = await db.OpenConnectionAsync();
+    var users = await conn.QueryAsync<AdminUserRow>(
+        "SELECT id AS Id, email AS Email, role AS Role FROM auth.users WHERE id <> @CurrentId ORDER BY email",
+        new { CurrentId = currentId });
+    return Results.Ok(users);
+});
+
+admin.MapPut("/{id:long}/email", async (long id, UpdateEmailRequest req, NpgsqlDataSource db) =>
+{
+    await using var conn = await db.OpenConnectionAsync();
+    try
+    {
+        var rows = await conn.ExecuteAsync(
+            "UPDATE auth.users SET email = @Email WHERE id = @Id",
+            new { req.Email, Id = id });
+        return rows == 0 ? Results.NotFound() : Results.Ok();
+    }
+    catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.UniqueViolation)
+    {
+        return Results.Conflict("Email already registered");
+    }
+});
+
+admin.MapPut("/{id:long}/password", async (long id, UpdatePasswordRequest req, NpgsqlDataSource db) =>
+{
+    await using var conn = await db.OpenConnectionAsync();
+    var hash = BCrypt.Net.BCrypt.HashPassword(req.Password);
+    var rows = await conn.ExecuteAsync(
+        "UPDATE auth.users SET password_hash = @Hash WHERE id = @Id",
+        new { Hash = hash, Id = id });
+    return rows == 0 ? Results.NotFound() : Results.Ok();
+});
+
+admin.MapPut("/{id:long}/role", async (long id, UpdateRoleRequest req, NpgsqlDataSource db) =>
+{
+    await using var conn = await db.OpenConnectionAsync();
+    try
+    {
+        var rows = await conn.ExecuteAsync(
+            "UPDATE auth.users SET role = @Role WHERE id = @Id",
+            new { req.Role, Id = id });
+        return rows == 0 ? Results.NotFound() : Results.Ok();
+    }
+    catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.CheckViolation)
+    {
+        return Results.BadRequest("Invalid role");
+    }
+});
+
+admin.MapDelete("/{id:long}", async (long id, HttpContext http, NpgsqlDataSource db) =>
+{
+    var currentId = long.Parse(http.User.FindFirstValue(JwtRegisteredClaimNames.Sub)!);
+    if (id == currentId)
+        return Results.BadRequest("Cannot delete your own account");
+
+    await using var conn = await db.OpenConnectionAsync();
+    var rows = await conn.ExecuteAsync("DELETE FROM auth.users WHERE id = @Id", new { Id = id });
+    return rows == 0 ? Results.NotFound() : Results.Ok();
+});
+
 app.Run();
 
 record LoginRequest(string Email, string Password);
 record RegisterRequest(string Email, string Password);
 record UserRow(long Id, string PasswordHash, string Role);
+record AdminUserRow(long Id, string Email, string Role);
+record UpdateEmailRequest(string Email);
+record UpdatePasswordRequest(string Password);
+record UpdateRoleRequest(string Role);

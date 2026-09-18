@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobil_application/Authentication/auth_session.dart';
 import 'package:mobil_application/Controllers/roomController.dart';
 import 'package:mobil_application/Presentation/LoginScreen.dart';
+import 'package:mobil_application/Presentation/AdministrationPanel.dart';
 import 'package:mobil_application/Presentation/RoomView.dart';
 import 'package:mobil_application/Widgets/RoomTile.dart';
 
@@ -22,6 +23,15 @@ class RoomOverview extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Rooms'),
         actions: [
+          if (AuthSession.isAdmin)
+            IconButton(
+              icon: const Icon(Icons.admin_panel_settings),
+              tooltip: 'Administration',
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AdministrationPanel()),
+              ),
+            ),
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Log out',
