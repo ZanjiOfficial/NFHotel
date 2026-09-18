@@ -12,7 +12,7 @@ import 'RoomList.dart';
 //Fandt flutter_login https://pub.dev/packages/flutter_login#-installing-tab-
 //
 // Android emulator -> host machine is 10.0.2.2; iOS sim / desktop / web -> localhost/127.0.0.1
-const _apiBase = 'http://10.0.2.2:5142'; //port 5142 is the default port for the LoginApi project; 10.0.2.2 = Android emulator's alias for host localhost
+const _apiBase = 'http://127.0.0.1:5142'; //port 5142 is the default port for the LoginApi project; use 10.0.2.2 instead if running on an Android emulator
 
 final users = {'user@example.com': '12345', 'user2@example.com': '54321'};
 
