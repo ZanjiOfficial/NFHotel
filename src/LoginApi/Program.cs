@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Dapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 
@@ -12,9 +13,26 @@ builder.Services.AddSingleton(NpgsqlDataSource.Create(
 builder.Services.AddHttpClient();
 builder.Services.AddCors(options => options.AddPolicy("AllowAll", p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
 
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+        };
+    });
+    
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
 app.UseCors("AllowAll");
 app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapPost("/auth/register", async (RegisterRequest req, NpgsqlDataSource db) =>
 {
     await using var conn = await db.OpenConnectionAsync();
@@ -36,7 +54,7 @@ app.MapPost("/auth/login", async (LoginRequest req, NpgsqlDataSource db, IConfig
 {
     await using var conn = await db.OpenConnectionAsync();
     var user = await conn.QuerySingleOrDefaultAsync<UserRow>(
-        "SELECT id AS Id, password_hash AS PasswordHash FROM auth.users WHERE email = @Email",
+        "SELECT id AS Id, password_hash AS PasswordHash, role AS Role FROM auth.users WHERE email = @Email",
         new { req.Email });
 
     if (user is null || !BCrypt.Net.BCrypt.Verify(req.Password, user.PasswordHash))
@@ -46,7 +64,10 @@ app.MapPost("/auth/login", async (LoginRequest req, NpgsqlDataSource db, IConfig
     var token = new JwtSecurityToken(
     issuer: config["Jwt:Issuer"],
     audience: config["Jwt:Audience"],
-    claims: [new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString())],
+    claims: [
+        new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+        new Claim(ClaimTypes.Role, user.Role)
+    ],
     expires: DateTime.UtcNow.AddMinutes(15),
     signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
 
@@ -57,4 +78,4 @@ app.Run();
 
 record LoginRequest(string Email, string Password);
 record RegisterRequest(string Email, string Password);
-record UserRow(long Id, string PasswordHash);
+record UserRow(long Id, string PasswordHash, string Role);
