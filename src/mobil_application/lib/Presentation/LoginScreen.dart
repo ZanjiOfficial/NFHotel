@@ -14,14 +14,9 @@ import 'RoomList.dart';
 // Android emulator -> host machine is 10.0.2.2; iOS sim / desktop / web -> localhost/127.0.0.1
 const _apiBase = 'http://127.0.0.1:5142'; //port 5142 is the default port for the LoginApi project; use 10.0.2.2 instead if running on an Android emulator
 
-final users = {'user@example.com': '12345', 'user2@example.com': '54321'};
-
-
 //login logic
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
-
-  Duration get loginTime => const Duration(milliseconds: 300);
 
   Future<String?> _authUser(LoginData data) async {
     try {
@@ -43,16 +38,6 @@ class LoginScreen extends StatelessWidget {
     }
   }
 
-  Future<String?> _recoverPassword(String name) {
-    debugPrint('name: $name');
-    return Future.delayed(loginTime).then((_) {
-      if (!users.containsKey(name)) {
-        return 'User not found';
-      }
-      return null;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return FlutterLogin(
@@ -65,7 +50,8 @@ class LoginScreen extends StatelessWidget {
           MaterialPageRoute(builder: (context) => const RoomOverview()),
         );
       },
-      onRecoverPassword: _recoverPassword,
+      hideForgotPasswordButton: true, // no recovery endpoint in LoginApi; admins reset passwords in the admin panel
+      onRecoverPassword: (_) async => 'Password recovery is not available',
       theme: LoginTheme(
         primaryColor: AppColors.navy,
         accentColor: AppColors.amber,
