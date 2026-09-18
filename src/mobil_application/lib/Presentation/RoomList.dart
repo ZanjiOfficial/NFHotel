@@ -39,22 +39,26 @@ class RoomOverview extends StatelessWidget {
           ),
         ],
       ),
-      body: ListenableBuilder(
-        listenable: roomController,
-        builder: (context, _) => GridView.builder(
-          padding: const EdgeInsets.all(16),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-          ),
-          itemCount: roomController.rooms.length,
-          itemBuilder: (context, i) => RoomTile(
-            room: roomController.rooms[i],
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => RoomView(room: roomController.rooms[i]),
+      body: SafeArea(
+        child: ListenableBuilder(
+          listenable: roomController,
+          // 2 columns on phones, more on wider screens
+          builder: (context, _) => GridView.builder(
+            padding: const EdgeInsets.all(16),
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 200,
+              childAspectRatio: 0.9,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+            ),
+            itemCount: roomController.rooms.length,
+            itemBuilder: (context, i) => RoomTile(
+              room: roomController.rooms[i],
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => RoomView(room: roomController.rooms[i]),
+                ),
               ),
             ),
           ),

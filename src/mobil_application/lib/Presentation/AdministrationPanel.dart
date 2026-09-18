@@ -38,7 +38,10 @@ class _AdministrationPanelState extends State<AdministrationPanel> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _creating = true);
-    final res = await _repo.register(_emailController.text, _passwordController.text);
+    final res = await _repo.register(
+      _emailController.text,
+      _passwordController.text,
+    );
     if (!mounted) return;
     setState(() => _creating = false);
 
@@ -50,7 +53,9 @@ class _AdministrationPanelState extends State<AdministrationPanel> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            res.statusCode == 409 ? 'Email already registered' : 'Could not create account',
+            res.statusCode == 409
+                ? 'Email already registered'
+                : 'Could not create account',
           ),
         ),
       );
@@ -82,6 +87,7 @@ class _AdministrationPanelState extends State<AdministrationPanel> {
         title: const Text('Edit email'),
         content: TextField(
           controller: controller,
+          keyboardType: TextInputType.emailAddress,
           decoration: const InputDecoration(labelText: 'Email'),
         ),
         actions: [
@@ -106,7 +112,9 @@ class _AdministrationPanelState extends State<AdministrationPanel> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            res.statusCode == 409 ? 'Email already in use' : 'Could not update email',
+            res.statusCode == 409
+                ? 'Email already in use'
+                : 'Could not update email',
           ),
         ),
       );
@@ -153,10 +161,12 @@ class _AdministrationPanelState extends State<AdministrationPanel> {
       builder: (context) => SimpleDialog(
         title: Text('Change role for ${user.email}'),
         children: _roles
-            .map((role) => SimpleDialogOption(
-                  onPressed: () => Navigator.pop(context, role),
-                  child: Text(role),
-                ))
+            .map(
+              (role) => SimpleDialogOption(
+                onPressed: () => Navigator.pop(context, role),
+                child: Text(role),
+              ),
+            )
             .toList(),
       ),
     );
@@ -167,9 +177,8 @@ class _AdministrationPanelState extends State<AdministrationPanel> {
     if (res.statusCode == 200) {
       _loadUsers();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not update role')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Could not update role')));
     }
   }
 
@@ -198,9 +207,9 @@ class _AdministrationPanelState extends State<AdministrationPanel> {
     if (res.statusCode == 200) {
       _loadUsers();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not delete account')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Could not delete account')));
     }
   }
 
@@ -209,119 +218,143 @@ class _AdministrationPanelState extends State<AdministrationPanel> {
     final textTheme = Theme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(title: const Text('Administration')),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 420),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Create account', style: textTheme.headlineSmall),
-                const SizedBox(height: 8),
-                Text(
-                  'Set up staff access to manage rooms.',
-                  style: textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 24),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          TextFormField(
-                            controller: _emailController,
-                            decoration: const InputDecoration(
-                              labelText: 'Email',
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: const EdgeInsets.all(16),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Create account', style: textTheme.headlineSmall),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Set up staff access to manage rooms.',
+                    style: textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 24),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            TextFormField(
+                              controller: _emailController,
+                              keyboardType: TextInputType.emailAddress,
+                              textInputAction: TextInputAction.next,
+                              decoration: const InputDecoration(
+                                labelText: 'Email',
+                              ),
+                              validator: (value) =>
+                                  (value == null || value.isEmpty)
+                                  ? 'Required'
+                                  : null,
                             ),
-                            validator: (value) =>
-                                (value == null || value.isEmpty) ? 'Required' : null,
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _passwordController,
-                            decoration: const InputDecoration(
-                              labelText: 'Password',
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _passwordController,
+                              decoration: const InputDecoration(
+                                labelText: 'Password',
+                              ),
+                              obscureText: true,
+                              validator: (value) =>
+                                  (value == null || value.isEmpty)
+                                  ? 'Required'
+                                  : null,
                             ),
-                            obscureText: true,
-                            validator: (value) =>
-                                (value == null || value.isEmpty) ? 'Required' : null,
-                          ),
-                          const SizedBox(height: 24),
-                          ElevatedButton(
-                            onPressed: _creating ? null : _createAccount,
-                            child: _creating
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  )
-                                : const Text('Sign Up'),
-                          ),
-                        ],
+                            const SizedBox(height: 24),
+                            ElevatedButton(
+                              onPressed: _creating ? null : _createAccount,
+                              child: _creating
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Text('Sign Up'),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 32),
-                Text('Users', style: textTheme.headlineSmall),
-                const SizedBox(height: 8),
-                if (_loading)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 24),
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                else if (_users.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Text('No other users.'),
-                  )
-                else
-                  Card(
-                    child: ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _users.length,
-                      separatorBuilder: (_, __) => const Divider(height: 1),
-                      itemBuilder: (context, i) {
-                        final user = _users[i];
-                        return ListTile(
-                          title: Text(user.email),
-                          subtitle: Text(user.role),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit),
-                                tooltip: 'Edit email',
-                                onPressed: () => _editEmail(user),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.lock_reset),
-                                tooltip: 'Change password',
-                                onPressed: () => _editPassword(user),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.badge),
-                                tooltip: 'Change role',
-                                onPressed: () => _editRole(user),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.red),
-                                tooltip: 'Delete account',
-                                onPressed: () => _deleteUser(user),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                  const SizedBox(height: 32),
+                  Text('Users', style: textTheme.headlineSmall),
+                  const SizedBox(height: 8),
+                  if (_loading)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (_users.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: Text('No other users.'),
+                    )
+                  else
+                    Card(
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: _users.length,
+                        separatorBuilder: (_, __) => const Divider(height: 1),
+                        itemBuilder: (context, i) {
+                          final user = _users[i];
+                          return ListTile(
+                            title: Text(user.email),
+                            subtitle: Text(user.role),
+                            // one menu instead of 4 icon buttons, which left no room for the email on phones
+                            trailing: PopupMenuButton<VoidCallback>(
+                              tooltip: 'Actions',
+                              onSelected: (action) => action(),
+                              itemBuilder: (context) => [
+                                PopupMenuItem(
+                                  value: () => _editEmail(user),
+                                  child: const ListTile(
+                                    leading: Icon(Icons.edit),
+                                    title: Text('Edit email'),
+                                  ),
+                                ),
+                                PopupMenuItem(
+                                  value: () => _editPassword(user),
+                                  child: const ListTile(
+                                    leading: Icon(Icons.lock_reset),
+                                    title: Text('Change password'),
+                                  ),
+                                ),
+                                PopupMenuItem(
+                                  value: () => _editRole(user),
+                                  child: const ListTile(
+                                    leading: Icon(Icons.badge),
+                                    title: Text('Change role'),
+                                  ),
+                                ),
+                                PopupMenuItem(
+                                  value: () => _deleteUser(user),
+                                  child: const ListTile(
+                                    leading: Icon(
+                                      Icons.delete,
+                                      color: Colors.red,
+                                    ),
+                                    title: Text('Delete account'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
