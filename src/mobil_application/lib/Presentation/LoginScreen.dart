@@ -43,21 +43,6 @@ class LoginScreen extends StatelessWidget {
     }
   }
 
-  Future<String?> _signupUser(SignupData data) async {
-    try {
-      final res = await http.post(
-        Uri.parse('$_apiBase/auth/register'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': data.name, 'password': data.password}),
-      );
-      if (res.statusCode == 200) return null; // Signup successful
-      if (res.statusCode == 409) return 'Email already registered';
-      return 'An error occurred';
-    } catch (e) {
-      return 'Could not reach server';
-    }
-  }
-
   Future<String?> _recoverPassword(String name) {
     debugPrint('name: $name');
     return Future.delayed(loginTime).then((_) {
@@ -73,7 +58,6 @@ class LoginScreen extends StatelessWidget {
     return FlutterLogin(
       title: 'NFHotel',
       onLogin: _authUser,
-      onSignup: _signupUser,
       onSubmitAnimationCompleted: () {
         Navigator.of(
           context,
@@ -87,11 +71,6 @@ class LoginScreen extends StatelessWidget {
         accentColor: AppColors.amber,
         pageColorLight: AppColors.navy,
         pageColorDark: AppColors.navyDark,
-        titleStyle: GoogleFonts.playfairDisplay(
-          fontSize: 32,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
         bodyStyle: GoogleFonts.inter(color: AppColors.textMuted),
         buttonStyle: GoogleFonts.inter(
           fontWeight: FontWeight.w600,
