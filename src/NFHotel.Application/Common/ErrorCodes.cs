@@ -150,6 +150,30 @@ public static class ErrorCodes
         public const string ConcurrencyConflict = "room.concurrency_conflict";
     }
 
+    /// <summary>Fejlkoder for helligdagskalenderen hos analysetjenesten.</summary>
+    /// <remarks>
+    /// Koderne beskriver hvad kalderen kan gøre ved fejlen, ikke HTTP-detaljerne:
+    /// <see cref="NotConfigured"/> og <see cref="Unauthorized"/> er en driftsfejl,
+    /// <see cref="Unavailable"/> er værd at prøve igen senere.
+    /// </remarks>
+    public static class Holidays
+    {
+        /// <summary>Tjenestens adresse eller API-nøgle er ikke sat i konfigurationen.</summary>
+        public const string NotConfigured = "holidays.not_configured";
+
+        /// <summary>Tjenesten afviste API-nøglen (HTTP 401/403).</summary>
+        public const string Unauthorized = "holidays.unauthorized";
+
+        /// <summary>Tjenesten kunne ikke nås, svarede ikke i tide eller fejlede (netværk, timeout, HTTP 5xx).</summary>
+        public const string Unavailable = "holidays.unavailable";
+
+        /// <summary>Årstallene er ugyldige (fx første år efter sidste år), eller tjenesten afviste dem (HTTP 400/422).</summary>
+        public const string InvalidRequest = "holidays.invalid_request";
+
+        /// <summary>Tjenesten svarede noget vi ikke kan bruge (uventet status eller ulæseligt indhold).</summary>
+        public const string UnexpectedResponse = "holidays.unexpected_response";
+    }
+
     /// <summary>Fejlkoder for gæster.</summary>
     public static class Guest
     {

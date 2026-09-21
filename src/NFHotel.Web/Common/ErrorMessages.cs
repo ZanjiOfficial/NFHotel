@@ -89,6 +89,17 @@ public static class ErrorMessages
             [ErrorCodes.Guest.CountryRequired] = "Enter a country.",
             [ErrorCodes.Guest.CountryTooLong] = "That country name is too long.",
             [ErrorCodes.Guest.PassportNumberTooLong] = "That passport number is too long.",
+
+            // ----------------------------------------------------------
+            // HELLIGDAGE (analysetjenesten)
+            // ----------------------------------------------------------
+            // Konfigurations- og nøglefejl er en driftsfejl: brugeren kan ikke rette dem, så
+            // teksten er neutral. Detaljen står i loggen (HolidayApiClient).
+            [ErrorCodes.Holidays.NotConfigured] = "Holiday data isn't available right now.",
+            [ErrorCodes.Holidays.Unauthorized] = "Holiday data isn't available right now.",
+            [ErrorCodes.Holidays.Unavailable] = "We couldn't reach the holiday service. Please try again later.",
+            [ErrorCodes.Holidays.InvalidRequest] = "The selected years aren't valid.",
+            [ErrorCodes.Holidays.UnexpectedResponse] = "Holiday data isn't available right now.",
             [ErrorCodes.Guest.HasBookings] = "This guest can't be deleted because they still have bookings.",
             [ErrorCodes.Guest.ConcurrencyConflict] = "Someone else changed this guest. Reload the page and start over."
         };
