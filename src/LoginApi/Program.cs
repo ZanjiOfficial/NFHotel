@@ -69,7 +69,7 @@ app.MapPost("/auth/login", async (LoginRequest req, NpgsqlDataSource db, IConfig
         new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
         new Claim(ClaimTypes.Role, user.Role)
     ],
-    expires: DateTime.UtcNow.AddMinutes(15),
+    expires: DateTime.UtcNow.AddHours(8),
     signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
 
     return Results.Ok(new { accessToken = new JwtSecurityTokenHandler().WriteToken(token) });
