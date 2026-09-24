@@ -12,6 +12,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
 
     <!--
+      Bruges af `dotnet user-secrets` til udviklingsværdier der aldrig må i repoet, fx
+      HolidayApi:ApiKey. Ligger uden for arbejdsmappen, så den ikke kan committes ved en fejl.
+    -->
+    <UserSecretsId>nfhotel-web-2c1f6a3e-8d4b-4b7e-9a51-0e7c5d2b9f34</UserSecretsId>
+
+    <!--
       Samme bar som NFHotel.Infrastructure: 0 advarsler er et krav, ikke et mål.
       Uden TreatWarningsAsErrors bliver den første advarsel hurtigt til femten.
     -->

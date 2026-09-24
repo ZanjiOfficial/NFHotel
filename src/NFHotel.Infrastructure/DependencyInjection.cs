@@ -1,7 +1,9 @@
 using NFHotel.Application.Bookings;
 using NFHotel.Application.Common;
 using NFHotel.Application.Guests;
+using NFHotel.Application.Holidays;
 using NFHotel.Application.Rooms;
+using NFHotel.Infrastructure.Holidays;
 using NFHotel.Infrastructure.Persistence;
 using NFHotel.Infrastructure.Repositories;
 using NFHotel.Infrastructure.Security;
@@ -56,10 +58,12 @@ public static class DependencyInjection
         var connectionString = ReadConnectionString(configuration);
         var encryptionOptions = ReadEncryptionOptions(configuration);
         var timeOptions = ReadTimeOptions(configuration);
+        var holidayApiOptions = ReadHolidayApiOptions(configuration);
 
         AddPersistence(services, connectionString);
         AddSecurity(services, encryptionOptions);
         AddTime(services, timeOptions);
+        AddHolidayApi(services, holidayApiOptions);
         AddApplicationServices(services);
 
         return services;
@@ -143,6 +147,32 @@ public static class DependencyInjection
     }
 
     /// <summary>
+    /// Registrerer klienten til analysetjenestens helligdagskalender som en typed
+    /// <see cref="HttpClient"/> (<see cref="IHttpClientFactory"/> ejer handlerens levetid).
+    /// </summary>
+    private static void AddHolidayApi(IServiceCollection services, HolidayApiOptions options)
+    {
+        services.AddSingleton(options);
+
+        services.AddHttpClient<IHolidayCalendarClient, HolidayApiClient>(client =>
+        {
+            // Ugyldig adresse eller manglende nøgle er ikke en opstartsfejl: klienten svarer
+            // holidays.not_configured (se HolidayApiOptions). Vi konfigurerer derfor kun det der kan.
+            if (options.TryGetBaseUri(out var baseUri))
+            {
+                client.BaseAddress = baseUri;
+            }
+
+            client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
+
+            if (!string.IsNullOrWhiteSpace(options.ApiKey))
+            {
+                client.DefaultRequestHeaders.Add(HolidayApiOptions.ApiKeyHeaderName, options.ApiKey);
+            }
+        });
+    }
+
+    /// <summary>
     /// Registrerer Application-lagets tre services.
     /// </summary>
     /// <remarks>
@@ -184,6 +214,31 @@ public static class DependencyInjection
         _ = new AesGcmStringEncryptor(options);
 
         return options;
+    }
+
+    /// <summary>
+    /// Læser indstillingerne til analysetjenesten. Fejler ikke ved manglende værdier — se
+    /// <see cref="HolidayApiOptions"/> — men falder tilbage til standardadresse og -timeout.
+    /// </summary>
+    private static HolidayApiOptions ReadHolidayApiOptions(IConfiguration configuration)
+    {
+        var section = configuration.GetSection(HolidayApiOptions.SectionName);
+        var baseUrl = section[HolidayApiOptions.BaseUrlName];
+
+        var timeout = int.TryParse(
+            section[HolidayApiOptions.TimeoutSecondsName],
+            System.Globalization.NumberStyles.None,
+            System.Globalization.CultureInfo.InvariantCulture,
+            out var seconds) && seconds > 0
+            ? seconds
+            : HolidayApiOptions.DefaultTimeoutSeconds;
+
+        return new HolidayApiOptions
+        {
+            BaseUrl = string.IsNullOrWhiteSpace(baseUrl) ? HolidayApiOptions.DefaultBaseUrl : baseUrl,
+            ApiKey = section[HolidayApiOptions.ApiKeyName]?.Trim() ?? string.Empty,
+            TimeoutSeconds = timeout,
+        };
     }
 
     /// <summary>Læser tidsindstillingerne og verificerer at tidszonen findes på maskinen.</summary>

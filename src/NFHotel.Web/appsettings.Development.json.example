@@ -18,5 +18,11 @@
 
   "HotelTime": {
     "TimeZoneId": "Europe/Copenhagen"
+  },
+
+  "HolidayApi": {
+    "//": "Analysetjenesten (NF Hotel Analytics API). ApiKey hører IKKE i denne fil: dotnet user-secrets set \"HolidayApi:ApiKey\" \"<nøglen>\" --project src/NFHotel.Web",
+    "BaseUrl": "http://127.0.0.1:8000",
+    "TimeoutSeconds": 30
   }
 }
